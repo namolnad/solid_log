@@ -15,17 +15,6 @@ module SolidLog
       active ? "#{base_class} active" : base_class
     end
 
-    # Asset helpers
-    def solid_log_asset_path(asset)
-      if Rails.application.assets
-        asset_obj = Rails.application.assets.load_path.find(asset)
-        "/assets/#{asset_obj.digested_path}"
-      else
-        # Fallback for if assets aren't available
-        "/assets/#{asset}"
-      end
-    end
-
     # Log display helpers (shared across views)
     def level_badge(level)
       badge_class = case level.to_s.downcase

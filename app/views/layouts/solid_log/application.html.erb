@@ -7,8 +7,8 @@
 
   <%= yield :head %>
 
-  <%= tag.link rel: "stylesheet", href: solid_log_asset_path("solid_log/application.css"), "data-turbo-track": "reload" %>
-  <%= tag.script src: solid_log_asset_path("solid_log/live_tail.js"), defer: true, "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "solid_log/application", "data-turbo-track": "reload" %>
+  <%= javascript_include_tag "solid_log/live_tail", "data-turbo-track": "reload", defer: true %>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
