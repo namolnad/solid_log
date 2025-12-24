@@ -53,7 +53,7 @@ module SolidLog
         private
 
         def max_batch_size
-          1000 # TODO: Make configurable
+          SolidLog.configuration.max_batch_size
         end
 
         # Parse NDJSON (newline-delimited JSON) from request body
