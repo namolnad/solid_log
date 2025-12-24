@@ -10,8 +10,8 @@ module SolidLog
       end
 
       def copy_schema
-        # Copy to db/log_schema.rb (Rails convention for :log database)
-        copy_file File.expand_path("../../../../db/schema.rb", __dir__), "db/log_schema.rb"
+        # Copy to db/log_structure.sql (Rails convention for :log database)
+        copy_file File.expand_path("../../../../db/structure.sql", __dir__), "db/log_structure.sql"
       end
 
       def generate_triggers
@@ -34,10 +34,9 @@ module SolidLog
           Next steps:
 
           1. Setup the log database:
-             rails db:setup:log
+             rails db:create:log db:schema:load:log
 
-             This will create the database, load the schema (db/log_schema.rb),
-             and run the triggers migration for your database adapter (#{adapter_name}).
+             This will create the database, load the schema (db/log_structure.sql),
 
           2. Create an API token for log ingestion:
              rails solid_log:create_token["Production API"]

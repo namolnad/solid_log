@@ -9,6 +9,7 @@
 /test/dummy/tmp/
 /test/dummy/storage
 /test/dummy/db/log_schema.rb
+/test/dummy/db/log_structure.sql
 /test/dummy/db/log_migrate/
 /test/dummy/config/initializers/solid_log.rb
 !/**/.keep

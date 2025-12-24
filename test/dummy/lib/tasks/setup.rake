@@ -9,11 +9,12 @@ namespace :db do
 
       # Run the install generator (this copies schema and generates triggers)
       puts "Running install generator..."
-      Rails::Generators.invoke("solid_log:install", ["--force"])
+      Rails::Generators.invoke("solid_log:install", [ "--force" ])
 
-      # Use db:setup:log to create, load schema, and run migrations (just like end users will)
-      puts "Running db:setup:log..."
-      Rake::Task["db:setup:log"].invoke
+      # Create database, load schema (just like end users will)
+      puts "Setting up database (create, schema load)..."
+      Rake::Task["db:create:log"].invoke
+      Rake::Task["db:schema:load:log"].invoke
 
       puts "✅ SolidLog database setup complete!"
     end
