@@ -106,9 +106,10 @@ body {
 
 /* Page Header */
 .page-header {
-  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+  padding: var(--spacing-xl);
   background: white;
   border-bottom: 1px solid var(--color-gray-200);
+  margin-bottom: var(--spacing-lg);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -520,6 +521,7 @@ body {
 .btn-block {
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .btn-link {
@@ -543,6 +545,7 @@ body {
   background: white;
   border: 1px solid var(--color-gray-300);
   border-radius: var(--border-radius);
+  box-sizing: border-box;
 }
 
 .form-input:focus,
@@ -585,9 +588,13 @@ body {
   flex-direction: column;
 }
 
+.streams-page .page-header {
+  margin-bottom: 0;
+}
+
 .streams-container {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 400px 1fr;
   flex: 1;
   overflow: hidden;
 }
@@ -1131,6 +1138,26 @@ body {
   margin-bottom: var(--spacing-sm);
   font-size: 0.875rem;
   line-height: 1.6;
+}
+
+.field-help ol,
+.token-help ol {
+  margin: var(--spacing-sm) 0 var(--spacing-md) var(--spacing-lg);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.field-help ol li,
+.token-help ol li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.field-help code,
+.token-help code {
+  background: var(--color-gray-100);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8125rem;
 }
 
 .code-example {
