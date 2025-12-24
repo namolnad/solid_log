@@ -1,0 +1,47 @@
+<div class="tokens-page">
+  <div class="page-header">
+    <div>
+      <h1>Create API Token</h1>
+      <p class="subtitle">Generate a new token for log ingestion</p>
+    </div>
+    <div class="page-actions">
+      <%= link_to "← Back", tokens_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <div class="card">
+      <div class="card-header">
+        <h2>Token Details</h2>
+      </div>
+      <div class="card-body">
+        <%= form_with model: @token, url: tokens_path, class: "form" do |f| %>
+          <div class="form-group">
+            <%= f.label :name, "Token Name" %>
+            <%= f.text_field :name,
+                placeholder: "e.g., Production API, Staging Server",
+                class: "form-input",
+                required: true,
+                autofocus: true %>
+            <p class="form-help">Choose a descriptive name to identify this token.</p>
+          </div>
+
+          <div class="form-actions">
+            <%= f.submit "Create Token", class: "btn btn-primary" %>
+            <%= link_to "Cancel", tokens_path, class: "btn btn-secondary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <h3>Important Information</h3>
+      <ul>
+        <li>The token will only be displayed <strong>once</strong> after creation</li>
+        <li>Store it securely - it cannot be retrieved later</li>
+        <li>Tokens can be revoked at any time from the tokens list</li>
+        <li>Each token is hashed and stored securely</li>
+      </ul>
+    </div>
+  </div>
+</div>

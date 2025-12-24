@@ -1,0 +1,78 @@
+<div class="timeline-page">
+  <div class="page-header">
+    <div>
+      <h1>Job Timeline</h1>
+      <p class="subtitle">Job ID: <code><%= @job_id %></code></p>
+    </div>
+    <div class="page-actions">
+      <%= link_to "← Back to Stream", streams_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <div class="timeline-container">
+    <div class="timeline-stats">
+      <div class="stat-inline">
+        <span class="stat-inline-label">Total Entries:</span>
+        <span class="stat-inline-value"><%= @entries.size %></span>
+      </div>
+      <% if @entries.any? %>
+        <div class="stat-inline">
+          <span class="stat-inline-label">Job Duration:</span>
+          <span class="stat-inline-value">
+            <%= distance_of_time_in_words(@entries.last.created_at, @entries.first.created_at) %>
+          </span>
+        </div>
+        <div class="stat-inline">
+          <span class="stat-inline-label">Started:</span>
+          <span class="stat-inline-value"><%= @entries.last.created_at.strftime("%H:%M:%S.%L") %></span>
+        </div>
+        <div class="stat-inline">
+          <span class="stat-inline-label">Ended:</span>
+          <span class="stat-inline-value"><%= @entries.first.created_at.strftime("%H:%M:%S.%L") %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="timeline-entries">
+      <% @entries.reverse.each_with_index do |entry, index| %>
+        <div class="timeline-entry">
+          <div class="timeline-marker">
+            <div class="timeline-dot <%= entry.level %>"></div>
+            <% if index < @entries.size - 1 %>
+              <div class="timeline-line"></div>
+            <% end %>
+          </div>
+
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div class="timeline-time">
+                <%= entry.created_at.strftime("%H:%M:%S.%L") %>
+                <% if index > 0 %>
+                  <span class="timeline-delta">
+                    +<%= ((entry.created_at - @entries.reverse[index - 1].created_at) * 1000).round(1) %>ms
+                  </span>
+                <% end %>
+              </div>
+              <%= level_badge(entry.level) %>
+            </div>
+
+            <div class="timeline-message">
+              <%= entry.message %>
+            </div>
+
+            <% if entry.extra_fields.present? && entry.extra_fields != "{}" %>
+              <details class="timeline-details">
+                <summary>Additional Fields</summary>
+                <pre class="json-display-small"><%= pretty_json(entry.extra_fields) %></pre>
+              </details>
+            <% end %>
+
+            <div class="timeline-actions">
+              <%= link_to "View Details", entry_path(entry), class: "btn-link" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,106 @@
+<div class="entry-detail">
+  <div class="page-header">
+    <h1>Log Entry Details</h1>
+    <div class="page-actions">
+      <%= link_to "← Back to Stream", streams_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <div class="entry-detail-content">
+    <div class="card">
+      <div class="card-header">
+        <h2>Metadata</h2>
+      </div>
+      <div class="card-body">
+        <dl class="metadata-list">
+          <dt>Timestamp</dt>
+          <dd><%= @entry.created_at.iso8601 %> (<%= time_ago_in_words(@entry.created_at) %> ago)</dd>
+
+          <dt>Level</dt>
+          <dd><%= level_badge(@entry.level) %></dd>
+
+          <% if @entry.app.present? %>
+            <dt>Application</dt>
+            <dd><%= @entry.app %></dd>
+          <% end %>
+
+          <% if @entry.env.present? %>
+            <dt>Environment</dt>
+            <dd><%= @entry.env %></dd>
+          <% end %>
+
+          <% if @entry.request_id.present? %>
+            <dt>Request ID</dt>
+            <dd>
+              <%= @entry.request_id %>
+              <%= link_to "View timeline →", request_timeline_path(@entry.request_id), class: "metadata-link" %>
+            </dd>
+          <% end %>
+
+          <% if @entry.job_id.present? %>
+            <dt>Job ID</dt>
+            <dd>
+              <%= @entry.job_id %>
+              <%= link_to "View timeline →", job_timeline_path(@entry.job_id), class: "metadata-link" %>
+            </dd>
+          <% end %>
+
+          <% if @entry.controller.present? %>
+            <dt>Controller</dt>
+            <dd><%= @entry.controller %>#<%= @entry.action %></dd>
+          <% end %>
+
+          <% if @entry.path.present? %>
+            <dt>HTTP Request</dt>
+            <dd><%= @entry.method %> <%= @entry.path %></dd>
+          <% end %>
+
+          <% if @entry.status_code.present? %>
+            <dt>Status Code</dt>
+            <dd><%= http_status_badge(@entry.status_code) %></dd>
+          <% end %>
+
+          <% if @entry.duration.present? %>
+            <dt>Duration</dt>
+            <dd><%= format_duration(@entry.duration) %></dd>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Message</h2>
+      </div>
+      <div class="card-body">
+        <pre class="log-message-full"><%= @entry.message %></pre>
+      </div>
+    </div>
+
+    <% if @entry.extra_fields.present? && @entry.extra_fields != "{}" %>
+      <div class="card">
+        <div class="card-header">
+          <h2>Additional Fields</h2>
+        </div>
+        <div class="card-body">
+          <pre class="json-display"><%= pretty_json(@entry.extra_fields) %></pre>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @correlated_entries&.any? %>
+      <div class="card">
+        <div class="card-header">
+          <h2>Correlated Log Entries (<%= @correlated_entries.size %>)</h2>
+        </div>
+        <div class="card-body">
+          <div class="log-stream">
+            <% @correlated_entries.each do |correlated_entry| %>
+              <%= render "streams/log_row", entry: correlated_entry %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

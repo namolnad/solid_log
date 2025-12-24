@@ -1,0 +1,95 @@
+<div class="tokens-page">
+  <div class="page-header">
+    <div>
+      <h1>API Tokens</h1>
+      <p class="subtitle">Manage authentication tokens for log ingestion</p>
+    </div>
+    <div class="page-actions">
+      <%= link_to "Create Token", new_token_path, class: "btn btn-primary" %>
+      <%= link_to "← Dashboard", dashboard_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <div class="tokens-container">
+    <% if flash[:token_plaintext].present? %>
+      <div class="alert alert-success">
+        <h3>Token Created Successfully!</h3>
+        <p><strong>IMPORTANT:</strong> This is the only time you'll see this token. Copy it now!</p>
+        <div class="token-display">
+          <code><%= flash[:token_plaintext] %></code>
+          <button onclick="copyToken('<%= flash[:token_plaintext] %>')" class="btn btn-secondary btn-small">
+            Copy
+          </button>
+        </div>
+        <p class="token-usage">
+          Use in Authorization header: <code>Bearer <%= flash[:token_plaintext] %></code>
+        </p>
+      </div>
+    <% end %>
+
+    <% if @tokens.empty? %>
+      <div class="empty-state-large">
+        <h2>No API tokens yet</h2>
+        <p>Create a token to start ingesting logs via the HTTP API.</p>
+        <%= link_to "Create Your First Token", new_token_path, class: "btn btn-primary" %>
+      </div>
+    <% else %>
+      <div class="card">
+        <div class="card-header">
+          <h2>Active Tokens</h2>
+        </div>
+        <div class="card-body no-padding">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Created</th>
+                  <th>Last Used</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @tokens.each do |token| %>
+                  <tr>
+                    <td class="token-name"><%= token.name %></td>
+                    <td><%= time_ago_in_words(token.created_at) %> ago</td>
+                    <td>
+                      <% if token.last_used_at %>
+                        <%= time_ago_in_words(token.last_used_at) %> ago
+                      <% else %>
+                        <span class="text-muted">Never</span>
+                      <% end %>
+                    </td>
+                    <td class="table-actions">
+                      <%= button_to "Revoke", token_path(token), method: :delete,
+                          data: { confirm: "Revoke token '#{token.name}'? This cannot be undone." },
+                          class: "btn-link-small text-danger" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="token-help">
+      <h3>Using API Tokens</h3>
+      <p>Include the token in the Authorization header of your HTTP requests:</p>
+      <pre class="code-example">curl -X POST <%= request.base_url %>/api/v1/ingest \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Test log","level":"info"}'</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyToken(token) {
+  navigator.clipboard.writeText(token).then(() => {
+    alert('Token copied to clipboard!');
+  });
+}
+</script>

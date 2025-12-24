@@ -1,0 +1,178 @@
+<div class="dashboard">
+  <div class="page-header">
+    <h1>SolidLog Dashboard</h1>
+    <p class="subtitle">Real-time log monitoring and analytics</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Log Entries</div>
+      <div class="stat-value"><%= format_count(@health_metrics[:storage][:total_entries]) %></div>
+      <div class="stat-footer">
+        <%= link_to "View all →", streams_path, class: "stat-link" %>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Parse Backlog</div>
+      <div class="stat-value"><%= format_count(@health_metrics[:parsing][:unparsed_count]) %></div>
+      <div class="stat-footer">
+        <%= health_status_badge(@health_metrics[:parsing][:unparsed_count]) %>
+        <span class="stat-text"><%= @health_metrics[:parsing][:parse_backlog_percentage] %>%</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Error Rate (1h)</div>
+      <div class="stat-value error-count"><%= @health_metrics[:performance][:error_rate] %>%</div>
+      <div class="stat-footer">
+        <%= link_to "View errors →", streams_path(levels: ["error", "fatal"]), class: "stat-link" %>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Database Size</div>
+      <div class="stat-value"><%= @health_metrics[:storage][:database_size] %></div>
+      <div class="stat-footer">
+        <span class="stat-text"><%= format_count(@health_metrics[:storage][:total_fields]) %> fields tracked</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Avg Response Time (1h)</div>
+      <div class="stat-value"><%= @health_metrics[:performance][:avg_duration] %>ms</div>
+      <div class="stat-footer">
+        <span class="stat-text">Performance metric</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">Ingested Today</div>
+      <div class="stat-value"><%= format_count(@health_metrics[:ingestion][:today_raw]) %></div>
+      <div class="stat-footer">
+        <span class="stat-text">Last hour: <%= format_count(@health_metrics[:ingestion][:last_hour_raw]) %></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-row">
+    <div class="dashboard-col-8">
+      <div class="card">
+        <div class="card-header">
+          <h2>Recent Errors</h2>
+        </div>
+        <div class="card-body">
+          <% if @recent_errors.empty? %>
+            <p class="empty-state">No recent errors. System healthy! ✓</p>
+          <% else %>
+            <div class="log-list">
+              <% @recent_errors.each do |entry| %>
+                <div class="log-item">
+                  <div class="log-item-header">
+                    <%= level_badge(entry.level) %>
+                    <span class="log-time"><%= time_ago_in_words(entry.created_at) %> ago</span>
+                  </div>
+                  <div class="log-message">
+                    <%= link_to truncate_message(entry.message, length: 150), entry_path(entry) %>
+                  </div>
+                  <% if entry.controller.present? %>
+                    <div class="log-meta">
+                      <%= entry.controller %>#<%= entry.action %>
+                      <% if entry.status_code.present? %>
+                        - <%= http_status_badge(entry.status_code) %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-col-4">
+      <div class="card">
+        <div class="card-header">
+          <h2>Log Level Distribution</h2>
+        </div>
+        <div class="card-body">
+          <% if @log_level_distribution.empty? %>
+            <p class="empty-state">No log entries yet</p>
+          <% else %>
+            <div class="distribution-list">
+              <% total = @log_level_distribution.values.sum %>
+              <% @log_level_distribution.sort_by { |k, v| -v }.each do |level, count| %>
+                <div class="distribution-item">
+                  <div class="distribution-header">
+                    <%= level_badge(level) %>
+                    <span class="distribution-count"><%= format_count(count) %></span>
+                  </div>
+                  <div class="distribution-bar-container">
+                    <div class="distribution-bar" style="width: <%= (count.to_f / total * 100).round(1) %>%"></div>
+                  </div>
+                  <div class="distribution-percentage">
+                    <%= format_percentage(count, total) %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <h2>Quick Stats</h2>
+        </div>
+        <div class="card-body">
+          <div class="quick-stats">
+            <div class="quick-stat">
+              <span class="quick-stat-label">Oldest Entry</span>
+              <span class="quick-stat-value">
+                <%= @health_metrics[:storage][:oldest_entry] ? time_ago_or_never(@health_metrics[:storage][:oldest_entry]) : "N/A" %>
+              </span>
+            </div>
+            <div class="quick-stat">
+              <span class="quick-stat-label">Latest Entry</span>
+              <span class="quick-stat-value">
+                <%= @health_metrics[:storage][:newest_entry] ? time_ago_or_never(@health_metrics[:storage][:newest_entry]) : "N/A" %>
+              </span>
+            </div>
+            <div class="quick-stat">
+              <span class="quick-stat-label">Cache Entries</span>
+              <span class="quick-stat-value"><%= format_count(@health_metrics[:performance][:cache_entries]) %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <% if @field_recommendations.any? %>
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <h2>Field Promotion Recommendations</h2>
+          </div>
+          <div class="card-body">
+            <div class="recommendation-list">
+              <% @field_recommendations.each do |rec| %>
+                <div class="recommendation-item">
+                  <div class="recommendation-header">
+                    <code><%= rec[:field].name %></code>
+                    <span class="badge badge-warning">Priority: <%= rec[:priority] %>/10</span>
+                  </div>
+                  <div class="recommendation-meta">
+                    <%= rec[:field].field_type %> • <%= format_count(rec[:usage_count]) %> uses
+                  </div>
+                  <div class="recommendation-action">
+                    <%= rec[:recommendation] %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <%= link_to "View All Fields →", fields_path, class: "btn btn-secondary btn-block", style: "margin-top: 1rem;" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

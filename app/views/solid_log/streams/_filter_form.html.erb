@@ -1,0 +1,77 @@
+<div class="filter-form">
+  <h3>Filters</h3>
+
+  <%= form_with url: streams_path, method: :get, class: "filters" do |f| %>
+    <div class="filter-group">
+      <label>Search</label>
+      <%= text_field_tag :query, @current_filters[:query],
+          placeholder: "Search messages...",
+          class: "form-input" %>
+    </div>
+
+    <% if @available_filters[:levels]&.any? %>
+      <div class="filter-group">
+        <label>Log Level</label>
+        <% @available_filters[:levels].each do |level| %>
+          <div class="checkbox-item">
+            <%= check_box_tag "levels[]", level,
+                @current_filters[:levels].include?(level),
+                id: "level_#{level}" %>
+            <%= label_tag "level_#{level}" do %>
+              <%= level_badge(level) %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @available_filters[:apps]&.any? %>
+      <div class="filter-group">
+        <label>Application</label>
+        <%= select_tag :app,
+            options_for_select([["All Apps", ""]] + @available_filters[:apps].map { |a| [a, a] }, @current_filters[:app]),
+            class: "form-select" %>
+      </div>
+    <% end %>
+
+    <% if @available_filters[:envs]&.any? %>
+      <div class="filter-group">
+        <label>Environment</label>
+        <%= select_tag :env,
+            options_for_select([["All Environments", ""]] + @available_filters[:envs].map { |e| [e, e] }, @current_filters[:env]),
+            class: "form-select" %>
+      </div>
+    <% end %>
+
+    <div class="filter-group">
+      <label>Time Range</label>
+      <div class="time-inputs">
+        <%= datetime_field_tag :start_time, @current_filters[:start_time],
+            placeholder: "Start time",
+            class: "form-input form-input-small" %>
+        <%= datetime_field_tag :end_time, @current_filters[:end_time],
+            placeholder: "End time",
+            class: "form-input form-input-small" %>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <label>Request ID</label>
+      <%= text_field_tag :request_id, @current_filters[:request_id],
+          placeholder: "Filter by request...",
+          class: "form-input" %>
+    </div>
+
+    <div class="filter-group">
+      <label>Job ID</label>
+      <%= text_field_tag :job_id, @current_filters[:job_id],
+          placeholder: "Filter by job...",
+          class: "form-input" %>
+    </div>
+
+    <div class="filter-actions">
+      <%= submit_tag "Apply Filters", class: "btn btn-primary btn-block" %>
+      <%= link_to "Clear", streams_path, class: "btn btn-secondary btn-block" %>
+    </div>
+  <% end %>
+</div>

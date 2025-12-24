@@ -1,0 +1,88 @@
+<div class="timeline-page">
+  <div class="page-header">
+    <div>
+      <h1>Request Timeline</h1>
+      <p class="subtitle">Request ID: <code><%= @request_id %></code></p>
+    </div>
+    <div class="page-actions">
+      <%= link_to "← Back to Stream", streams_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <div class="timeline-container">
+    <div class="timeline-stats">
+      <div class="stat-inline">
+        <span class="stat-inline-label">Total Entries:</span>
+        <span class="stat-inline-value"><%= @entries.size %></span>
+      </div>
+      <% if @entries.any? %>
+        <div class="stat-inline">
+          <span class="stat-inline-label">Time Span:</span>
+          <span class="stat-inline-value">
+            <%= distance_of_time_in_words(@entries.last.created_at, @entries.first.created_at) %>
+          </span>
+        </div>
+        <div class="stat-inline">
+          <span class="stat-inline-label">First Entry:</span>
+          <span class="stat-inline-value"><%= @entries.last.created_at.strftime("%H:%M:%S.%L") %></span>
+        </div>
+        <div class="stat-inline">
+          <span class="stat-inline-label">Last Entry:</span>
+          <span class="stat-inline-value"><%= @entries.first.created_at.strftime("%H:%M:%S.%L") %></span>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="timeline-entries">
+      <% @entries.reverse.each_with_index do |entry, index| %>
+        <div class="timeline-entry">
+          <div class="timeline-marker">
+            <div class="timeline-dot <%= entry.level %>"></div>
+            <% if index < @entries.size - 1 %>
+              <div class="timeline-line"></div>
+            <% end %>
+          </div>
+
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <div class="timeline-time">
+                <%= entry.created_at.strftime("%H:%M:%S.%L") %>
+                <% if index > 0 %>
+                  <span class="timeline-delta">
+                    +<%= ((entry.created_at - @entries.reverse[index - 1].created_at) * 1000).round(1) %>ms
+                  </span>
+                <% end %>
+              </div>
+              <%= level_badge(entry.level) %>
+            </div>
+
+            <div class="timeline-message">
+              <%= entry.message %>
+            </div>
+
+            <% if entry.controller.present? || entry.status_code.present? || entry.duration.present? %>
+              <div class="timeline-meta">
+                <% if entry.controller.present? %>
+                  <span><strong>Action:</strong> <%= entry.controller %>#<%= entry.action %></span>
+                <% end %>
+                <% if entry.path.present? %>
+                  <span><strong>Path:</strong> <%= entry.method %> <%= entry.path %></span>
+                <% end %>
+                <% if entry.status_code.present? %>
+                  <span><strong>Status:</strong> <%= http_status_badge(entry.status_code) %></span>
+                <% end %>
+                <% if entry.duration.present? %>
+                  <span><strong>Duration:</strong> <%= format_duration(entry.duration) %></span>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="timeline-actions">
+              <%= link_to "View Details", entry_path(entry), class: "btn-link" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

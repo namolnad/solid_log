@@ -1,0 +1,11 @@
+/.bundle/
+/doc/
+/log/*.log
+/pkg/
+/tmp/
+/storage
+/test/dummy/log/
+/test/dummy/pkg/
+/test/dummy/tmp/
+/test/dummy/storage
+!/**/.keep

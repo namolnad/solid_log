@@ -1,0 +1,102 @@
+<div class="fields-page">
+  <div class="page-header">
+    <div>
+      <h1>Field Registry</h1>
+      <p class="subtitle">Track and manage dynamic log fields</p>
+    </div>
+    <div class="page-actions">
+      <%= link_to "← Dashboard", dashboard_path, class: "btn btn-secondary" %>
+    </div>
+  </div>
+
+  <div class="fields-container">
+    <div class="fields-stats">
+      <div class="stat-card-inline">
+        <div class="stat-label">Total Fields</div>
+        <div class="stat-value"><%= @total_fields %></div>
+      </div>
+      <div class="stat-card-inline">
+        <div class="stat-label">Hot Fields (>1000 uses)</div>
+        <div class="stat-value"><%= @hot_fields.size %></div>
+      </div>
+      <div class="stat-card-inline">
+        <div class="stat-label">Promoted Fields</div>
+        <div class="stat-value"><%= @fields.count(&:promoted?) %></div>
+      </div>
+    </div>
+
+    <% if @fields.empty? %>
+      <div class="empty-state-large">
+        <h2>No fields tracked yet</h2>
+        <p>Fields will appear here automatically as logs are parsed.</p>
+      </div>
+    <% else %>
+      <div class="card">
+        <div class="card-header">
+          <h2>All Fields</h2>
+        </div>
+        <div class="card-body no-padding">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Field Name</th>
+                  <th>Type</th>
+                  <th>Usage Count</th>
+                  <th>Last Seen</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @fields.each do |field| %>
+                  <tr class="<%= 'field-promoted' if field.promoted? %>">
+                    <td class="field-name">
+                      <code><%= field.name %></code>
+                    </td>
+                    <td><%= field.field_type %></td>
+                    <td class="text-right">
+                      <%= number_with_delimiter(field.usage_count) %>
+                      <% if field.usage_count >= 1000 %>
+                        <span class="badge badge-warning">HOT</span>
+                      <% end %>
+                    </td>
+                    <td><%= time_ago_in_words(field.last_seen_at) %> ago</td>
+                    <td>
+                      <% if field.promoted? %>
+                        <span class="badge badge-success">Promoted</span>
+                      <% else %>
+                        <span class="badge badge-secondary">Standard</span>
+                      <% end %>
+                    </td>
+                    <td class="table-actions">
+                      <% if field.promoted? %>
+                        <%= button_to "Demote", demote_field_path(field), method: :post, class: "btn-link-small" %>
+                      <% else %>
+                        <%= button_to "Promote", promote_field_path(field), method: :post, class: "btn-link-small" %>
+                      <% end %>
+                      <%= button_to "Remove", field_path(field), method: :delete,
+                          data: { confirm: "Remove field '#{field.name}' from registry?" },
+                          class: "btn-link-small text-danger" %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-help">
+        <h3>About Field Promotion</h3>
+        <p>
+          <strong>Promoted fields</strong> are marked for optimization. High-usage fields (1000+ occurrences)
+          are good candidates for promotion to dedicated database columns for faster querying.
+        </p>
+        <p>
+          Use the "Promote" button to mark fields that should be considered for schema optimization.
+        </p>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+class <%= migration_class_name %> < ActiveRecord::Migration[<%= ActiveRecord::Migration.current_version %>]
+  def up
+    # Add the promoted field as a dedicated column
+    add_column :solid_log_entries, :<%= column_name %>, :<%= column_type %>
+
+    # Backfill existing data from extra_fields JSON
+    say_with_time "Backfilling <%= column_name %> from extra_fields..." do
+      execute <<~SQL
+        UPDATE solid_log_entries
+        SET <%= column_name %> = <%= backfill_sql %>
+        WHERE json_extract(extra_fields, '$.<%= column_name %>') IS NOT NULL
+      SQL
+    end
+
+    # Add index for better query performance
+    add_index :solid_log_entries, :<%= column_name %>, name: "idx_entries_<%= column_name %>"
+
+    # Mark field as promoted in registry
+    say_with_time "Marking field as promoted in registry..." do
+      SolidLog::Field.find_by(name: "<%= column_name %>")&.update(promoted: true)
+    end
+  end
+
+  def down
+    remove_index :solid_log_entries, name: "idx_entries_<%= column_name %>"
+    remove_column :solid_log_entries, :<%= column_name %>
+
+    # Mark field as unpromoted in registry
+    SolidLog::Field.find_by(name: "<%= column_name %>")&.update(promoted: false)
+  end
+end

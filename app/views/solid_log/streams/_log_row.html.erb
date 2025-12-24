@@ -1,0 +1,60 @@
+<div class="log-row">
+  <div class="log-row-header">
+    <div class="log-row-meta">
+      <%= level_badge(entry.level) %>
+      <span class="log-timestamp" title="<%= entry.created_at.iso8601 %>">
+        <%= entry.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+      </span>
+      <% if entry.app.present? %>
+        <span class="log-app"><%= entry.app %></span>
+      <% end %>
+      <% if entry.env.present? %>
+        <span class="log-env"><%= entry.env %></span>
+      <% end %>
+    </div>
+    <div class="log-row-actions">
+      <%= link_to "Details", entry_path(entry), class: "btn-link" %>
+    </div>
+  </div>
+
+  <div class="log-row-content">
+    <div class="log-message">
+      <% if defined?(query) && query.present? %>
+        <%= highlight_search_term(entry.message, query) %>
+      <% else %>
+        <%= entry.message %>
+      <% end %>
+    </div>
+
+    <% if entry.controller.present? || entry.status_code.present? || entry.duration.present? %>
+      <div class="log-details">
+        <% if entry.controller.present? %>
+          <span class="log-detail-item">
+            <strong>Controller:</strong> <%= entry.controller %>#<%= entry.action %>
+          </span>
+        <% end %>
+        <% if entry.path.present? %>
+          <span class="log-detail-item">
+            <strong>Path:</strong> <%= entry.method %> <%= entry.path %>
+          </span>
+        <% end %>
+        <% if entry.status_code.present? %>
+          <span class="log-detail-item">
+            <strong>Status:</strong> <%= http_status_badge(entry.status_code) %>
+          </span>
+        <% end %>
+        <% if entry.duration.present? %>
+          <span class="log-detail-item">
+            <strong>Duration:</strong> <%= format_duration(entry.duration) %>
+          </span>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if entry.correlated? %>
+      <div class="log-correlation">
+        <%= correlation_link(entry) %>
+      </div>
+    <% end %>
+  </div>
+</div>
