@@ -8,6 +8,7 @@
 /test/dummy/pkg/
 /test/dummy/tmp/
 /test/dummy/storage
-/test/dummy/db/migrate/
-/test/dummy/db/schema.rb
+/test/dummy/db/log_schema.rb
+/test/dummy/db/log_migrate/
+/test/dummy/config/initializers/solid_log.rb
 !/**/.keep

@@ -1,4 +1,21 @@
 # SolidLog Configuration
+SolidLog.configure do |config|
+  # Maximum number of log entries to ingest in a single batch
+  config.max_batch_size = 1000
+
+  # Client configuration (for sending logs from this app to a SolidLog instance)
+  # config.client_token = ENV['SOLID_LOG_TOKEN']
+  # config.ingestion_url = 'https://logs.example.com/solid_log/api/v1/ingest'
+
+  # Future features (not yet implemented):
+  # config.retention_days = 30              # Auto-delete logs older than X days
+  # config.error_retention_days = 90        # Keep errors longer
+  # config.auto_promote_fields = false      # Auto-promote high-usage fields
+  # config.field_promotion_threshold = 1000 # Usage threshold for auto-promotion
+  # config.facet_cache_ttl = 5.minutes      # Cache filter dropdown values
+  # config.parser_concurrency = 5           # Concurrent parser workers
+end
+
 Rails.application.configure do
   # Enhanced logging with useful tags for debugging and monitoring
   config.log_tags = [
@@ -24,17 +41,4 @@ Rails.application.configure do
     # Consider setting log level to info to reduce debug noise
     # config.log_level = :info
   end
-end
-
-# Configure SolidLog
-SolidLog.configure do |config|
-  config.retention_days = 30
-  config.error_retention_days = 90
-  config.max_batch_size = 1000
-  config.parser_concurrency = 5
-  config.facet_cache_ttl = 5.minutes
-  config.authentication_method = :basic
-  config.ui_enabled = true
-  config.auto_promote_fields = false
-  config.field_promotion_threshold = 1000
 end

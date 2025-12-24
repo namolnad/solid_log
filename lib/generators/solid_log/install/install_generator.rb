@@ -3,14 +3,19 @@ module SolidLog
     class InstallGenerator < Rails::Generators::Base
       source_root File.expand_path("templates", __dir__)
 
-      desc "Install SolidLog configuration and migrations"
+      desc "Install SolidLog configuration and schema"
 
       def copy_initializer
         template "solid_log.rb", "config/initializers/solid_log.rb"
       end
 
-      def copy_migrations
-        rake "solid_log:install:migrations"
+      def copy_schema
+        # Copy to db/log_schema.rb (Rails convention for :log database)
+        copy_file File.expand_path("../../../../db/schema.rb", __dir__), "db/log_schema.rb"
+      end
+
+      def generate_triggers
+        generate "solid_log:triggers"
       end
 
       def show_readme
@@ -28,8 +33,11 @@ module SolidLog
 
           Next steps:
 
-          1. Run migrations to create the log database:
-             rails db:migrate
+          1. Setup the log database:
+             rails db:setup:log
+
+             This will create the database, load the schema (db/log_schema.rb),
+             and run the triggers migration for your database adapter (#{adapter_name}).
 
           2. Create an API token for log ingestion:
              rails solid_log:create_token["Production API"]
@@ -57,6 +65,10 @@ module SolidLog
           ====================================================================
 
         README
+      end
+
+      def adapter_name
+        ActiveRecord::Base.connection_db_config.adapter
       end
     end
   end
