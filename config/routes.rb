@@ -21,6 +21,7 @@ SolidLog::Engine.routes.draw do
     member do
       post :promote
       post :demote
+      patch :update_filter_type
     end
   end
 

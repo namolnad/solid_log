@@ -9,16 +9,48 @@ module SolidLog
 
     LOG_LEVELS = %w[debug info warn error fatal unknown].freeze
 
-    # Scopes for filtering
+    # Scopes for filtering (support both single values and arrays for multi-select)
     scope :by_level, ->(level) { where(level: level) if level.present? }
-    scope :by_app, ->(app) { where(app: app) if app.present? }
-    scope :by_env, ->(env) { where(env: env) if env.present? }
+    scope :by_app, ->(app) {
+      return all if app.blank?
+      app.is_a?(Array) ? where(app: app.reject(&:blank?)) : where(app: app)
+    }
+    scope :by_env, ->(env) {
+      return all if env.blank?
+      env.is_a?(Array) ? where(env: env.reject(&:blank?)) : where(env: env)
+    }
+    scope :by_controller, ->(controller) {
+      return all if controller.blank?
+      controller.is_a?(Array) ? where(controller: controller.reject(&:blank?)) : where(controller: controller)
+    }
+    scope :by_action, ->(action) {
+      return all if action.blank?
+      action.is_a?(Array) ? where(action: action.reject(&:blank?)) : where(action: action)
+    }
+    scope :by_path, ->(path) {
+      return all if path.blank?
+      path.is_a?(Array) ? where(path: path.reject(&:blank?)) : where(path: path)
+    }
+    scope :by_method, ->(method) {
+      return all if method.blank?
+      method.is_a?(Array) ? where(method: method.reject(&:blank?)) : where(method: method)
+    }
+    scope :by_status_code, ->(status_code) {
+      return all if status_code.blank?
+      status_code.is_a?(Array) ? where(status_code: status_code.reject(&:blank?)) : where(status_code: status_code)
+    }
     scope :by_request_id, ->(request_id) { where(request_id: request_id) if request_id.present? }
     scope :by_job_id, ->(job_id) { where(job_id: job_id) if job_id.present? }
     scope :by_time_range, ->(start_time, end_time) {
       scope = all
       scope = scope.where("created_at >= ?", start_time) if start_time.present?
       scope = scope.where("created_at <= ?", end_time) if end_time.present?
+      scope
+    }
+    scope :by_duration_range, ->(min_duration, max_duration) {
+      scope = all
+      scope = scope.where("duration >= ?", min_duration) if min_duration.present?
+      scope = scope.where("duration <= ?", max_duration) if max_duration.present?
       scope
     }
     scope :recent, -> { order(created_at: :desc) }
@@ -68,21 +100,25 @@ module SolidLog
 
     # Get available facets for a field
     def self.facets_for(field, limit: 100)
-      case field
+      return [] unless column_names.include?(field.to_s)
+
+      # Get distinct values
+      values = distinct.pluck(field).compact
+
+      # Sort and limit
+      case field.to_s
       when "level"
-        distinct.pluck(:level).compact.sort
-      when "app"
-        distinct.pluck(:app).compact.sort
-      when "env"
-        distinct.pluck(:env).compact.sort
-      when "controller"
-        distinct.pluck(:controller).compact.take(limit).sort
-      when "action"
-        distinct.pluck(:action).compact.take(limit).sort
-      when "method"
-        distinct.pluck(:method).compact.sort
+        # Sort by severity
+        values.sort_by { |l| LOG_LEVELS.index(l) || 999 }
+      when "status_code"
+        # Sort numerically
+        values.sort
+      when "controller", "action", "path"
+        # Limit and sort these potentially large lists
+        values.take(limit).sort
       else
-        []
+        # Default: sort alphabetically
+        values.sort
       end
     end
 

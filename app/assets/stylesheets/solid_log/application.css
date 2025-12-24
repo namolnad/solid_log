@@ -1141,14 +1141,18 @@ body {
 }
 
 .field-help ol,
-.token-help ol {
+.token-help ol,
+.field-help ul,
+.token-help ul {
   margin: var(--spacing-sm) 0 var(--spacing-md) var(--spacing-lg);
   font-size: 0.875rem;
   line-height: 1.6;
 }
 
 .field-help ol li,
-.token-help ol li {
+.token-help ol li,
+.field-help ul li,
+.token-help ul li {
   margin-bottom: var(--spacing-xs);
 }
 
@@ -1158,6 +1162,25 @@ body {
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 0.8125rem;
+}
+
+/* Inline forms */
+.inline-form {
+  display: inline-block;
+  margin: 0;
+}
+
+.form-select-small {
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  min-width: 120px;
+}
+
+.form-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-gray-600);
+  margin-top: var(--spacing-xs);
 }
 
 .code-example {

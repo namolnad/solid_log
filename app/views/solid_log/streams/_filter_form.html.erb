@@ -28,20 +28,105 @@
     <% if @available_filters[:apps]&.any? %>
       <div class="filter-group">
         <label>Application</label>
-        <%= select_tag :app,
-            options_for_select([["All Apps", ""]] + @available_filters[:apps].map { |a| [a, a] }, @current_filters[:app]),
-            class: "form-select" %>
+        <% if @available_filters[:apps].size <= 5 %>
+          <% @available_filters[:apps].each do |app_name| %>
+            <div class="checkbox-item">
+              <%= check_box_tag "app[]", app_name,
+                  @current_filters[:app].include?(app_name),
+                  id: "app_#{app_name.parameterize}" %>
+              <%= label_tag "app_#{app_name.parameterize}", app_name %>
+            </div>
+          <% end %>
+        <% else %>
+          <%= select_tag "app[]",
+              options_for_select(@available_filters[:apps].map { |a| [a, a] }, @current_filters[:app]),
+              { multiple: true, class: "form-select", size: [[@available_filters[:apps].size, 5].min, 2].max } %>
+        <% end %>
       </div>
     <% end %>
 
     <% if @available_filters[:envs]&.any? %>
       <div class="filter-group">
         <label>Environment</label>
-        <%= select_tag :env,
-            options_for_select([["All Environments", ""]] + @available_filters[:envs].map { |e| [e, e] }, @current_filters[:env]),
-            class: "form-select" %>
+        <% @available_filters[:envs].each do |env_name| %>
+          <div class="checkbox-item">
+            <%= check_box_tag "env[]", env_name,
+                @current_filters[:env].include?(env_name),
+                id: "env_#{env_name.parameterize}" %>
+            <%= label_tag "env_#{env_name.parameterize}", env_name %>
+          </div>
+        <% end %>
       </div>
     <% end %>
+
+    <% if @available_filters[:controllers]&.any? %>
+      <div class="filter-group">
+        <label>Controller</label>
+        <%= select_tag "controller[]",
+            options_for_select(@available_filters[:controllers].map { |c| [c, c] }, @current_filters[:controller]),
+            { multiple: true, class: "form-select", size: [[@available_filters[:controllers].size, 5].min, 2].max } %>
+      </div>
+    <% end %>
+
+    <% if @available_filters[:actions]&.any? %>
+      <div class="filter-group">
+        <label>Action</label>
+        <%= select_tag "action[]",
+            options_for_select(@available_filters[:actions].map { |a| [a, a] }, @current_filters[:action]),
+            { multiple: true, class: "form-select", size: [[@available_filters[:actions].size, 5].min, 2].max } %>
+      </div>
+    <% end %>
+
+    <% if @available_filters[:methods]&.any? %>
+      <div class="filter-group">
+        <label>HTTP Method</label>
+        <% @available_filters[:methods].each do |method_name| %>
+          <div class="checkbox-item">
+            <%= check_box_tag "method[]", method_name,
+                @current_filters[:method].include?(method_name),
+                id: "method_#{method_name.parameterize}" %>
+            <%= label_tag "method_#{method_name.parameterize}", method_name %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @available_filters[:paths]&.any? %>
+      <div class="filter-group">
+        <label>Path</label>
+        <%= select_tag "path[]",
+            options_for_select(@available_filters[:paths].map { |p| [p, p] }, @current_filters[:path]),
+            { multiple: true, class: "form-select", size: [[@available_filters[:paths].size, 5].min, 2].max } %>
+      </div>
+    <% end %>
+
+    <% if @available_filters[:status_codes]&.any? %>
+      <div class="filter-group">
+        <label>Status Code</label>
+        <% @available_filters[:status_codes].each do |code| %>
+          <div class="checkbox-item">
+            <%= check_box_tag "status_code[]", code,
+                @current_filters[:status_code].include?(code.to_s),
+                id: "status_code_#{code}" %>
+            <%= label_tag "status_code_#{code}" do %>
+              <%= http_status_badge(code) %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="filter-group">
+      <label>Duration (ms)</label>
+      <div class="time-inputs">
+        <%= number_field_tag :min_duration, @current_filters[:min_duration],
+            placeholder: "Min",
+            class: "form-input form-input-small" %>
+        <%= number_field_tag :max_duration, @current_filters[:max_duration],
+            placeholder: "Max",
+            class: "form-input form-input-small" %>
+      </div>
+    </div>
 
     <div class="filter-group">
       <label>Time Range</label>
@@ -68,6 +153,69 @@
           placeholder: "Filter by job...",
           class: "form-input" %>
     </div>
+
+    <%# Dynamically render promoted field filters with facets %>
+    <% @available_filters.each do |key, values| %>
+      <% next if [:levels, :apps, :envs, :controllers, :actions, :methods, :paths, :status_codes].include?(key) %>
+      <% next unless values&.any? %>
+
+      <% field = Field.promoted.find_by(name: key.to_s) %>
+      <% next unless field %>
+
+      <div class="filter-group">
+        <label><%= key.to_s.titleize %></label>
+
+        <% case field.filter_type %>
+        <% when "multiselect" %>
+          <% if values.size <= 5 %>
+            <% values.each do |value| %>
+              <div class="checkbox-item">
+                <%= check_box_tag "#{key}[]", value,
+                    Array(@current_filters[key]).include?(value),
+                    id: "#{key}_#{value.to_s.parameterize}" %>
+                <%= label_tag "#{key}_#{value.to_s.parameterize}", value %>
+              </div>
+            <% end %>
+          <% else %>
+            <%= select_tag "#{key}[]",
+                options_for_select(values.map { |v| [v, v] }, @current_filters[key]),
+                { multiple: true, class: "form-select", size: [[values.size, 5].min, 2].max } %>
+          <% end %>
+
+        <% when "range" %>
+          <div class="time-inputs">
+            <%= number_field_tag "min_#{key}", @current_filters["min_#{key}".to_sym],
+                placeholder: "Min",
+                class: "form-input form-input-small" %>
+            <%= number_field_tag "max_#{key}", @current_filters["max_#{key}".to_sym],
+                placeholder: "Max",
+                class: "form-input form-input-small" %>
+          </div>
+
+        <% when "contains" %>
+          <%= text_field_tag key, @current_filters[key],
+              placeholder: "Search #{key.to_s.titleize}...",
+              class: "form-input" %>
+
+        <% when "exact" %>
+          <%= select_tag key,
+              options_for_select([["All #{key.to_s.titleize}", ""]] + values.map { |v| [v, v] }, @current_filters[key]),
+              class: "form-select" %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Render token-based promoted fields (no facets needed) %>
+    <% Field.promoted.where(filter_type: "tokens").each do |field| %>
+      <% next unless Entry.column_names.include?(field.name) %>
+      <div class="filter-group">
+        <label><%= field.name.titleize %></label>
+        <%= text_field_tag field.name, @current_filters[field.name.to_sym],
+            placeholder: "Enter #{field.name.titleize} (comma-separated)...",
+            class: "form-input" %>
+        <small class="form-hint">Enter multiple values separated by commas</small>
+      </div>
+    <% end %>
 
     <div class="filter-actions">
       <%= submit_tag "Apply Filters", class: "btn btn-primary btn-block" %>

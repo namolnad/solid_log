@@ -29,6 +29,18 @@ module SolidLog
       redirect_to fields_path, notice: "Field '#{@field.name}' marked as unpromoted"
     end
 
+    def update_filter_type
+      @field = Field.find(params[:id])
+
+      SolidLog.without_logging do
+        if @field.update(filter_type: params[:field][:filter_type])
+          redirect_to fields_path, notice: "Filter type for '#{@field.name}' updated to #{@field.filter_type}"
+        else
+          redirect_to fields_path, alert: "Failed to update filter type: #{@field.errors.full_messages.join(', ')}"
+        end
+      end
+    end
+
     def destroy
       @field = Field.find(params[:id])
       field_name = @field.name

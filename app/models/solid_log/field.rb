@@ -3,9 +3,14 @@ module SolidLog
     self.table_name = "solid_log_fields"
 
     FIELD_TYPES = %w[string number boolean datetime array object].freeze
+    FILTER_TYPES = %w[multiselect range exact contains tokens].freeze
+
+    # High-cardinality fields that should default to tokens
+    HIGH_CARDINALITY_PATTERNS = %w[user_id session_id ip_address uuid transaction_id].freeze
 
     validates :name, presence: true, uniqueness: true
     validates :field_type, presence: true, inclusion: { in: FIELD_TYPES }
+    validates :filter_type, presence: true, inclusion: { in: FILTER_TYPES }
     validates :usage_count, numericality: { greater_than_or_equal_to: 0 }
 
     scope :hot_fields, ->(threshold = 1000) { where("usage_count >= ?", threshold).order(usage_count: :desc) }
@@ -38,6 +43,7 @@ module SolidLog
     def self.track(name, value)
       field = find_or_initialize_by(name: name)
       field.field_type ||= infer_type(value)
+      field.filter_type ||= infer_filter_type(field.field_type, name)
 
       # Save if new record before calling increment_usage!
       field.save! if field.new_record?
@@ -71,6 +77,23 @@ module SolidLog
         end
       else
         "string"
+      end
+    end
+
+    # Infer filter type from field type and name
+    def self.infer_filter_type(field_type, field_name = nil)
+      # Check if field name suggests high cardinality
+      if field_name && HIGH_CARDINALITY_PATTERNS.any? { |pattern| field_name.to_s.include?(pattern) }
+        return "tokens"
+      end
+
+      case field_type
+      when "number", "datetime"
+        "range"
+      when "boolean"
+        "exact"
+      else
+        "multiselect"
       end
     end
   end

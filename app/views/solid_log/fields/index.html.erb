@@ -41,7 +41,8 @@
               <thead>
                 <tr>
                   <th>Field Name</th>
-                  <th>Type</th>
+                  <th>Data Type</th>
+                  <th>Filter Type</th>
                   <th>Usage Count</th>
                   <th>Last Seen</th>
                   <th>Status</th>
@@ -55,6 +56,15 @@
                       <code><%= field.name %></code>
                     </td>
                     <td><%= field.field_type %></td>
+                    <td>
+                      <%= form_with model: field, url: update_filter_type_field_path(field), method: :patch, class: "inline-form" do |f| %>
+                        <%= f.select :filter_type,
+                            Field::FILTER_TYPES.map { |ft| [ft.titleize, ft] },
+                            {},
+                            { class: "form-select form-select-small",
+                              onchange: "this.form.requestSubmit()" } %>
+                      <% end %>
+                    </td>
                     <td class="text-right">
                       <%= number_with_delimiter(field.usage_count) %>
                       <% if field.usage_count >= 1000 %>
@@ -94,8 +104,29 @@
           are good candidates for promotion to dedicated database columns for faster querying.
         </p>
         <p>
-          Use the "Promote" button to mark fields that should be considered for schema optimization.
+          <strong>To complete the promotion process:</strong>
         </p>
+        <ol>
+          <li>Click "Promote" to mark the field in the UI</li>
+          <li>Generate a migration: <code>rails g solid_log:promote_field field_name --type=string</code></li>
+          <li>Run the migration: <code>rails db:migrate</code></li>
+        </ol>
+        <p class="text-muted">
+          Note: The "Promote" button only marks fields for tracking. You must generate and run a migration
+          to create the actual database column for optimized queries.
+        </p>
+
+        <h3>Filter Types</h3>
+        <p>
+          Choose the appropriate filter type for how users will search this field:
+        </p>
+        <ul>
+          <li><strong>Multiselect</strong> - Select multiple values from a dropdown or checkboxes (e.g., status, category)</li>
+          <li><strong>Tokens</strong> - Enter comma-separated values for high-cardinality fields (e.g., user_id, session_id)</li>
+          <li><strong>Range</strong> - Filter by min/max values (e.g., price, age, timestamps)</li>
+          <li><strong>Exact</strong> - Select a single exact value (e.g., boolean flags)</li>
+          <li><strong>Contains</strong> - Text search with partial matching (e.g., names, descriptions)</li>
+        </ul>
       </div>
     <% end %>
   </div>

@@ -3,6 +3,7 @@ class CreateSolidLogFields < ActiveRecord::Migration[8.0]
     create_table :solid_log_fields do |t|
       t.string :name, null: false
       t.string :field_type, null: false
+      t.string :filter_type, default: "multiselect", null: false
       t.integer :usage_count, default: 0, null: false
       t.datetime :last_seen_at
       t.boolean :promoted, default: false, null: false
