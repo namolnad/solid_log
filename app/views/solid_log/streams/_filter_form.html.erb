@@ -38,9 +38,12 @@
             </div>
           <% end %>
         <% else %>
-          <%= f.select "filters[app][]",
-              options_for_select(@available_filters[:apps].map { |a| [a, a] }, @current_filters[:app]),
-              { multiple: true, class: "form-select", size: [[@available_filters[:apps].size, 5].min, 2].max } %>
+          <%= render "solid_log/shared/checkbox_dropdown",
+              field_name: "filters[app]",
+              options: @available_filters[:apps],
+              selected: @current_filters[:app],
+              label: "Select Applications",
+              id_prefix: "app" %>
         <% end %>
       </div>
     <% end %>
@@ -62,18 +65,46 @@
     <% if @available_filters[:controllers]&.any? %>
       <div class="filter-group">
         <label>Controller</label>
-        <%= f.select "filters[controller][]",
-            options_for_select(@available_filters[:controllers].map { |c| [c, c] }, @current_filters[:controller]),
-            { multiple: true, class: "form-select", size: [[@available_filters[:controllers].size, 5].min, 2].max } %>
+        <% if @available_filters[:controllers].size <= 1 %>
+          <% @available_filters[:controllers].each do |controller_name| %>
+            <div class="checkbox-item">
+              <%= checkbox_tag "filters[controller][]", controller_name,
+                  @current_filters[:controller].include?(controller_name),
+                  id: "controller_#{controller_name.parameterize}" %>
+              <%= f.label "controller_#{controller_name.parameterize}", controller_name %>
+            </div>
+          <% end %>
+        <% else %>
+          <%= render "solid_log/shared/checkbox_dropdown",
+              field_name: "filters[controller]",
+              options: @available_filters[:controllers],
+              selected: @current_filters[:controller],
+              label: "Select Controllers",
+              id_prefix: "controller" %>
+        <% end %>
       </div>
     <% end %>
 
     <% if @available_filters[:actions]&.any? %>
       <div class="filter-group">
         <label>Action</label>
-        <%= f.select "filters[action][]",
-            options_for_select(@available_filters[:actions].map { |a| [a, a] }, @current_filters[:action]),
-            { multiple: true, class: "form-select", size: [[@available_filters[:actions].size, 5].min, 2].max } %>
+        <% if @available_filters[:actions].size <= 5 %>
+          <% @available_filters[:actions].each do |action_name| %>
+            <div class="checkbox-item">
+              <%= checkbox_tag "filters[action][]", action_name,
+                  @current_filters[:action].include?(action_name),
+                  id: "action_#{action_name.parameterize}" %>
+              <%= f.label "action_#{action_name.parameterize}", action_name %>
+            </div>
+          <% end %>
+        <% else %>
+          <%= render "solid_log/shared/checkbox_dropdown",
+              field_name: "filters[action]",
+              options: @available_filters[:actions],
+              selected: @current_filters[:action],
+              label: "Select Actions",
+              id_prefix: "action" %>
+        <% end %>
       </div>
     <% end %>
 
@@ -94,9 +125,23 @@
     <% if @available_filters[:paths]&.any? %>
       <div class="filter-group">
         <label>Path</label>
-        <%= f.select "filters[path][]",
-            options_for_select(@available_filters[:paths].map { |p| [p, p] }, @current_filters[:path]),
-            { multiple: true, class: "form-select", size: [[@available_filters[:paths].size, 5].min, 2].max } %>
+        <% if @available_filters[:paths].size <= 5 %>
+          <% @available_filters[:paths].each do |path_name| %>
+            <div class="checkbox-item">
+              <%= checkbox_tag "filters[path][]", path_name,
+                  @current_filters[:path].include?(path_name),
+                  id: "path_#{path_name.parameterize}" %>
+              <%= f.label "path_#{path_name.parameterize}", path_name %>
+            </div>
+          <% end %>
+        <% else %>
+          <%= render "solid_log/shared/checkbox_dropdown",
+              field_name: "filters[path]",
+              options: @available_filters[:paths],
+              selected: @current_filters[:path],
+              label: "Select Paths",
+              id_prefix: "path" %>
+        <% end %>
       </div>
     <% end %>
 
@@ -177,9 +222,12 @@
               </div>
             <% end %>
           <% else %>
-            <%= f.select "filters[#{key}][]",
-                options_for_select(values.map { |v| [v, v] }, @current_filters[key]),
-                { multiple: true, class: "form-select", size: [[values.size, 5].min, 2].max } %>
+            <%= render "solid_log/shared/checkbox_dropdown",
+                field_name: "filters[#{key}]",
+                options: values,
+                selected: Array(@current_filters[key]),
+                label: "Select #{key.to_s.titleize}",
+                id_prefix: key.to_s %>
           <% end %>
 
         <% when "range" %>

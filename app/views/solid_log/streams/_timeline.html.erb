@@ -1,0 +1,64 @@
+<% if @timeline_data[:buckets].any? %>
+  <div class="timeline-histogram" data-controller="timeline-histogram">
+    <div class="timeline-header-row">
+      <h3>Log Timeline</h3>
+      <div class="timeline-info">
+        <span class="timeline-range">
+          <%= @timeline_data[:start_time].strftime("%Y-%m-%d %H:%M") %> -
+          <%= @timeline_data[:end_time].strftime("%Y-%m-%d %H:%M") %>
+        </span>
+        <button type="button" class="btn-link-small" data-action="click->timeline-histogram#clearSelection">
+          Clear Time Filter
+        </button>
+      </div>
+    </div>
+
+    <div class="timeline-chart" data-timeline-histogram-target="chart">
+      <% max_count = @timeline_data[:buckets].map { |b| b[:count] }.max %>
+      <% max_count = 1 if max_count == 0 %> <%# Avoid division by zero %>
+
+      <div class="timeline-bars" data-timeline-histogram-target="barsContainer">
+        <% @timeline_data[:buckets].each_with_index do |bucket, index| %>
+          <div class="timeline-bar-wrapper"
+               data-timeline-histogram-target="bar"
+               data-index="<%= index %>"
+               data-start-time="<%= bucket[:start_time].iso8601 %>"
+               data-end-time="<%= bucket[:end_time].iso8601 %>"
+               data-count="<%= bucket[:count] %>"
+               data-action="mouseenter->timeline-histogram#showTooltip
+                           mouseleave->timeline-histogram#hideTooltip
+                           mousedown->timeline-histogram#startSelection">
+            <div class="timeline-bar"
+                 style="height: <%= (bucket[:count].to_f / max_count * 100).round(2) %>%">
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="timeline-selection"
+           data-timeline-histogram-target="selection"
+           style="display: none;">
+      </div>
+    </div>
+
+    <div class="timeline-tooltip"
+         data-timeline-histogram-target="tooltip"
+         style="display: none;">
+    </div>
+
+    <%= form_with url: streams_path, method: :get, data: { timeline_histogram_target: "form" } do |f| %>
+      <% @current_filters.each do |key, value| %>
+        <% next if [:start_time, :end_time].include?(key) %>
+        <% if value.is_a?(Array) %>
+          <% value.each do |v| %>
+            <%= hidden_field_tag "filters[#{key}][]", v %>
+          <% end %>
+        <% else %>
+          <%= hidden_field_tag "filters[#{key}]", value %>
+        <% end %>
+      <% end %>
+      <%= hidden_field_tag "filters[start_time]", "", data: { timeline_histogram_target: "startTimeField" } %>
+      <%= hidden_field_tag "filters[end_time]", "", data: { timeline_histogram_target: "endTimeField" } %>
+    <% end %>
+  </div>
+<% end %>

@@ -53,7 +53,7 @@ module SolidLog
       scope = scope.where("duration <= ?", max_duration) if max_duration.present?
       scope
     }
-    scope :recent, -> { order(created_at: :desc) }
+    scope :recent, -> { order(created_at: :asc) } # Ascending for terminal-style view (newest at bottom)
     scope :errors, -> { where(level: %w[error fatal]) }
 
     # Full-text search (database-agnostic)

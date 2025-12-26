@@ -1,31 +1,14 @@
-<div class="streams-page">
-  <div class="page-header">
-    <h1>Log Stream</h1>
-    <div class="page-actions">
-      <%= link_to "Dashboard", dashboard_path, class: "btn btn-secondary" %>
-    </div>
-  </div>
+<% content_for :stream_footer do %>
+  <%= render "footer" %>
+<% end %>
 
+<div class="streams-page">
   <div class="streams-container">
     <div class="streams-sidebar">
       <%= render "filter_form" %>
     </div>
 
     <div class="streams-main">
-      <div class="streams-toolbar">
-        <div class="streams-count">
-          Showing <%= @entries.size %> entries
-          <% if @entries.size >= 200 %>
-            (limited to 200, use filters to narrow down)
-          <% end %>
-        </div>
-        <div class="streams-actions">
-          <button id="live-tail-toggle" class="btn btn-secondary">
-            ▶ Live Tail
-          </button>
-        </div>
-      </div>
-
       <% if @entries.empty? %>
         <div class="empty-state-large">
           <h2>No log entries found</h2>

@@ -1,0 +1,36 @@
+<div class="log-row-compact-wrapper">
+  <% if entry.request_id.present? %>
+    <button type="button" class="log-filter-btn" data-filter-type="request_id" data-filter-value="<%= entry.request_id %>">
+      [<%= entry.request_id %>]
+    </button>
+  <% end %>
+
+  <% if entry.extra_fields_hash['ip'].present? %>
+    <button type="button" class="log-filter-btn" data-filter-type="ip" data-filter-value="<%= entry.extra_fields_hash['ip'] %>">
+      [ip:<%= entry.extra_fields_hash['ip'] %>]
+    </button>
+  <% end %>
+
+  <% if entry.extra_fields_hash['user_id'].present? %>
+    <button type="button" class="log-filter-btn" data-filter-type="user_id" data-filter-value="<%= entry.extra_fields_hash['user_id'] %>">
+      [user:<%= entry.extra_fields_hash['user_id'] %>]
+    </button>
+  <% end %>
+
+  <% if entry.method.present? %>
+    <button type="button" class="log-filter-btn" data-filter-type="method" data-filter-value="<%= entry.method %>">
+      [method:<%= entry.method %>]
+    </button>
+  <% end %>
+
+  <% if entry.app.present? %>
+    <button type="button" class="log-filter-btn" data-filter-type="app" data-filter-value="<%= entry.app %>">
+      [<%= entry.app %>]
+    </button>
+  <% end %>
+
+  <%= link_to entry_path(entry), class: "log-row-compact-message" do %>
+    <%= defined?(query) && query.present? ? highlight_search_term(entry.message, query) : entry.message %>
+    <span class="log-row-timestamp">at <%= entry.created_at.strftime("%Y-%m-%d %H:%M:%S %z") %></span>
+  <% end %>
+</div>

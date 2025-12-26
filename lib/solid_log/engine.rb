@@ -16,7 +16,12 @@ module SolidLog
         # For Sprockets, explicitly add files to precompile list
         app.config.assets.precompile += %w[
           solid_log/application.css
+          solid_log/components.css
+          solid_log/stream_scroll.js
           solid_log/live_tail.js
+          solid_log/checkbox_dropdown.js
+          solid_log/timeline_histogram.js
+          solid_log/log_filters.js
         ]
       end
       # Propshaft automatically discovers assets in app/assets via its railtie

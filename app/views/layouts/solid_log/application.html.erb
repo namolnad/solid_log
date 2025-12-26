@@ -8,7 +8,12 @@
   <%= yield :head %>
 
   <%= stylesheet_link_tag "solid_log/application", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "solid_log/components", "data-turbo-track": "reload" %>
+  <%= javascript_include_tag "solid_log/stream_scroll", "data-turbo-track": "reload", defer: true %>
   <%= javascript_include_tag "solid_log/live_tail", "data-turbo-track": "reload", defer: true %>
+  <%= javascript_include_tag "solid_log/checkbox_dropdown", "data-turbo-track": "reload", defer: true %>
+  <%= javascript_include_tag "solid_log/timeline_histogram", "data-turbo-track": "reload", defer: true %>
+  <%= javascript_include_tag "solid_log/log_filters", "data-turbo-track": "reload", defer: true %>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
@@ -31,6 +36,9 @@
   </main>
 
   <footer class="footer">
+    <% if content_for?(:stream_footer) %>
+      <%= yield :stream_footer %>
+    <% end %>
     <div class="footer-content">
       <span>SolidLog <%= SolidLog::VERSION rescue "1.0.0" %></span>
     </div>

@@ -1,0 +1,67 @@
+<%# Checkbox dropdown component for multi-select filters
+  Required params:
+    - field_name: the form field name (e.g., "filters[controller]")
+    - options: array of values to display
+    - selected: array of currently selected values
+    - label: display label for the dropdown
+  Optional params:
+    - id_prefix: prefix for checkbox IDs (defaults to field_name)
+%>
+
+<%
+  id_prefix = local_assigns[:id_prefix] || field_name.gsub(/[\[\]]/, '_')
+  dropdown_id = "#{id_prefix}_dropdown"
+  selected_count = selected.count { |v| v.present? }
+  selected_items = selected.reject(&:blank?)
+%>
+
+<div class="checkbox-dropdown-portal" data-controller="checkbox-dropdown">
+  <button type="button" class="checkbox-dropdown-toggle" data-action="click->checkbox-dropdown#toggle" aria-expanded="false">
+    <div class="dropdown-toggle-content">
+      <span class="dropdown-label"><%= label %></span>
+      <% if selected_count > 0 %>
+        <span class="badge badge-small"><%= selected_count %></span>
+      <% end %>
+    </div>
+    <span class="dropdown-arrow">▼</span>
+  </button>
+
+  <% if selected_items.any? %>
+    <div class="checkbox-dropdown-preview">
+      <% selected_items.first(3).each do |item| %>
+        <span class="preview-tag"><%= item %></span>
+      <% end %>
+      <% if selected_items.size > 3 %>
+        <span class="preview-more">+<%= selected_items.size - 3 %> more</span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <!-- Portal/Popover Menu (positioned absolutely across full sidebar width) -->
+  <div class="checkbox-dropdown-popover" data-checkbox-dropdown-target="menu" style="display: none;">
+    <div class="popover-header">
+      <h4><%= label %></h4>
+      <button type="button" class="popover-close" data-action="click->checkbox-dropdown#close">×</button>
+    </div>
+
+    <div class="popover-search">
+      <input type="text"
+             placeholder="Search..."
+             data-action="input->checkbox-dropdown#filter"
+             data-checkbox-dropdown-target="search"
+             class="form-input form-input-small">
+    </div>
+
+    <div class="popover-options" data-checkbox-dropdown-target="options">
+      <% options.each do |option| %>
+        <div class="checkbox-item" data-checkbox-dropdown-target="option" data-value="<%= option.to_s.downcase %>">
+          <%= check_box_tag "#{field_name}[]", option,
+              selected.include?(option),
+              id: "#{id_prefix}_#{option.to_s.parameterize}",
+              data: { action: "change->checkbox-dropdown#updateCount" } %>
+          <%= label_tag "#{id_prefix}_#{option.to_s.parameterize}", option %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -17,16 +17,25 @@
           <dd><%= @entry.created_at.iso8601 %> (<%= time_ago_in_words(@entry.created_at) %> ago)</dd>
 
           <dt>Level</dt>
-          <dd><%= level_badge(@entry.level) %></dd>
+          <dd>
+            <%= level_badge(@entry.level) %>
+            <%= link_to "Filter by #{@entry.level} →", streams_path(filters: { levels: [@entry.level] }), class: "metadata-link" %>
+          </dd>
 
           <% if @entry.app.present? %>
             <dt>Application</dt>
-            <dd><%= @entry.app %></dd>
+            <dd>
+              <%= @entry.app %>
+              <%= link_to "Filter by app →", streams_path(filters: { app: [@entry.app] }), class: "metadata-link" %>
+            </dd>
           <% end %>
 
           <% if @entry.env.present? %>
             <dt>Environment</dt>
-            <dd><%= @entry.env %></dd>
+            <dd>
+              <%= @entry.env %>
+              <%= link_to "Filter by env →", streams_path(filters: { env: [@entry.env] }), class: "metadata-link" %>
+            </dd>
           <% end %>
 
           <% if @entry.request_id.present? %>
@@ -34,6 +43,7 @@
             <dd>
               <%= @entry.request_id %>
               <%= link_to "View timeline →", request_timeline_path(@entry.request_id), class: "metadata-link" %>
+              <%= link_to "Filter →", streams_path(filters: { request_id: @entry.request_id }), class: "metadata-link" %>
             </dd>
           <% end %>
 
@@ -42,22 +52,38 @@
             <dd>
               <%= @entry.job_id %>
               <%= link_to "View timeline →", job_timeline_path(@entry.job_id), class: "metadata-link" %>
+              <%= link_to "Filter →", streams_path(filters: { job_id: @entry.job_id }), class: "metadata-link" %>
             </dd>
           <% end %>
 
           <% if @entry.controller.present? %>
             <dt>Controller</dt>
-            <dd><%= @entry.controller %>#<%= @entry.action %></dd>
+            <dd>
+              <%= @entry.controller %>#<%= @entry.action %>
+              <%= link_to "Filter by controller →", streams_path(filters: { controller: [@entry.controller] }), class: "metadata-link" %>
+              <% if @entry.action.present? %>
+                <%= link_to "Filter by action →", streams_path(filters: { action: [@entry.action] }), class: "metadata-link" %>
+              <% end %>
+            </dd>
           <% end %>
 
           <% if @entry.path.present? %>
             <dt>HTTP Request</dt>
-            <dd><%= @entry.method %> <%= @entry.path %></dd>
+            <dd>
+              <%= @entry.method %> <%= @entry.path %>
+              <%= link_to "Filter by path →", streams_path(filters: { path: [@entry.path] }), class: "metadata-link" %>
+              <% if @entry.method.present? %>
+                <%= link_to "Filter by method →", streams_path(filters: { method: [@entry.method] }), class: "metadata-link" %>
+              <% end %>
+            </dd>
           <% end %>
 
           <% if @entry.status_code.present? %>
             <dt>Status Code</dt>
-            <dd><%= http_status_badge(@entry.status_code) %></dd>
+            <dd>
+              <%= http_status_badge(@entry.status_code) %>
+              <%= link_to "Filter by status →", streams_path(filters: { status_code: [@entry.status_code.to_s] }), class: "metadata-link" %>
+            </dd>
           <% end %>
 
           <% if @entry.duration.present? %>

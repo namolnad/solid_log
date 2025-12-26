@@ -181,6 +181,185 @@
   align-items: center;
 }
 
+/* Checkbox Dropdown - Portal/Popover Style */
+.checkbox-dropdown-portal {
+  position: relative;
+  width: 100%;
+}
+
+.checkbox-dropdown-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-gray-900);
+  background: white;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease;
+}
+
+.dropdown-toggle-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.dropdown-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkbox-dropdown-toggle:hover {
+  border-color: var(--color-gray-400);
+}
+
+.checkbox-dropdown-toggle[aria-expanded="true"] {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.checkbox-dropdown-toggle .badge-small {
+  display: inline-block;
+  min-width: 1.25rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+.dropdown-arrow {
+  color: var(--color-gray-600);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.checkbox-dropdown-toggle[aria-expanded="true"] .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+/* Preview of Selected Items */
+.checkbox-dropdown-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  border-left: 2px solid var(--color-primary);
+  margin-left: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.preview-tag {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.preview-more {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  color: var(--color-gray-600);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+/* Popover - Spans Full Sidebar Width */
+.checkbox-dropdown-popover {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 60px; /* Below nav */
+  bottom: 0;
+  background: white;
+  border-right: 1px solid var(--color-gray-300);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  width: 400px; /* Match sidebar width */
+}
+
+.popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+}
+
+.popover-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.popover-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-gray-600);
+  cursor: pointer;
+  padding: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.popover-close:hover {
+  color: var(--color-gray-900);
+}
+
+.popover-search {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.popover-search .form-input {
+  margin: 0;
+}
+
+.popover-options {
+  overflow-y: auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+  flex: 1;
+}
+
+.popover-options .checkbox-item {
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--border-radius);
+  transition: background 0.1s ease;
+}
+
+.popover-options .checkbox-item:hover {
+  background: var(--color-gray-50);
+}
+
 /* Streams Page */
 .streams-page {
   height: 100vh;
@@ -188,31 +367,79 @@
   flex-direction: column;
 }
 
-.streams-page .page-header {
-  margin-bottom: 0;
-}
-
 .streams-container {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: 420px 1fr;
   flex: 1;
   overflow: hidden;
+  position: relative;
+  gap: 0;
+  padding: 10px;
+  padding-right: 0;
 }
 
 .streams-sidebar {
+  position: sticky;
+  top: 70px; /* Below nav with padding */
+  height: calc(100vh - 80px); /* Full viewport height minus nav and padding */
   background: white;
-  border-right: 1px solid var(--color-gray-200);
-  overflow-y: auto;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .streams-main {
   overflow-y: auto;
-  padding: var(--spacing-lg);
+  padding: 0 var(--spacing-lg);
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Stream Footer (in page footer) */
+.stream-footer {
+  background: white;
+  border-bottom: 1px solid var(--color-gray-200);
+  padding: var(--spacing-md) var(--spacing-xl);
+}
+
+.stream-footer-row {
+  padding-top: var(--spacing-sm);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-xl);
+  justify-content: space-between;
+}
+
+.stream-footer-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.stream-footer-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-shrink: 0;
+}
+
+.stream-count-info {
+  font-size: 0.8125rem;
+  color: var(--color-gray-600);
+  white-space: nowrap;
 }
 
 /* Filter Form */
 .filter-form {
   padding: var(--spacing-lg);
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .filter-form h3 {
@@ -225,6 +452,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  flex: 1;
 }
 
 .filter-group {
@@ -249,8 +477,133 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  padding-top: var(--spacing-md);
+  padding: var(--spacing-lg);
   border-top: 1px solid var(--color-gray-200);
+  background: white;
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+}
+
+/* Timeline Histogram */
+.timeline-histogram {
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.timeline-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.timeline-header-row h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-gray-900);
+}
+
+.timeline-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.timeline-range {
+  font-size: 0.8125rem;
+  color: var(--color-gray-600);
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+}
+
+.timeline-chart {
+  position: relative;
+  height: 80px;
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.timeline-bars {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  gap: 1px;
+  padding: 0.5rem;
+}
+
+.timeline-bar-wrapper {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  cursor: pointer;
+  position: relative;
+}
+
+.timeline-bar {
+  width: 100%;
+  background: var(--color-primary);
+  opacity: 0.6;
+  transition: opacity 0.1s ease;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+}
+
+.timeline-bar-wrapper:hover .timeline-bar {
+  opacity: 0.9;
+}
+
+.timeline-bar-wrapper.selected .timeline-bar {
+  background: #10b981;
+  opacity: 1;
+}
+
+.timeline-selection {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(16, 185, 129, 0.2);
+  border: 2px solid #10b981;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.timeline-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--color-gray-900);
+  color: white;
+  padding: 0.375rem 0.5rem;
+  border-radius: var(--border-radius);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+}
+
+.timeline-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--color-gray-900);
+}
+
+.tooltip-time {
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+  margin-bottom: 0.125rem;
+}
+
+.tooltip-count {
+  font-weight: 600;
 }
 
 /* Streams Toolbar */
@@ -290,9 +643,89 @@
 .log-stream {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: 0;
+  background: #1a1a1a; /* Terminal dark background */
+  border: 1px solid #333;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  padding: 0.5rem;
 }
 
+/* Compact Log Row - Terminal Style */
+.log-row-compact-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  background: transparent;
+  transition: background 0.1s ease;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.log-row-compact-wrapper:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.log-filter-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.1s ease;
+  white-space: nowrap;
+}
+
+.log-filter-btn:hover {
+  color: #60a5fa;
+}
+
+.log-row-compact-message {
+  flex: 1;
+  color: #e4e4e4;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.1s ease;
+  min-width: 0;
+}
+
+.log-row-compact-message:hover {
+  color: #fff;
+}
+
+.log-row-timestamp {
+  color: #666;
+  margin-left: 0.5rem;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+  text-align: center;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  color: #888;
+  font-size: 0.875rem;
+  font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Legacy log row styles (for details page if needed) */
 .log-row {
   background: white;
   border: 1px solid var(--color-gray-200);
@@ -364,6 +797,15 @@
 .log-detail-item {
   display: flex;
   gap: 0.25rem;
+}
+
+.log-detail-link {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.log-detail-link:hover {
+  text-decoration: underline;
 }
 
 .log-correlation {

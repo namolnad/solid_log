@@ -10,7 +10,8 @@ module SolidLog
                   :auto_promote_fields,
                   :field_promotion_threshold,
                   :client_token,
-                  :ingestion_url
+                  :ingestion_url,
+                  :stream_view_style
 
     def initialize
       @retention_days = 30
@@ -24,6 +25,7 @@ module SolidLog
       @field_promotion_threshold = 1000
       @client_token = nil
       @ingestion_url = nil
+      @stream_view_style = :compact # :compact or :expanded
     end
   end
 end

@@ -29,10 +29,13 @@
   }
 
   function startLiveTail() {
-    // Reload every 5 seconds
+    // Poll for new entries every 3 seconds
     liveTailInterval = setInterval(function() {
-      window.location.reload();
-    }, 5000);
+      fetchNewEntries();
+    }, 3000);
+
+    // Initial fetch
+    fetchNewEntries();
   }
 
   function stopLiveTail() {
@@ -42,13 +45,71 @@
     }
   }
 
-  // Auto-scroll to bottom when live tail is active
+  function fetchNewEntries() {
+    const logStream = document.querySelector('.log-stream');
+    if (!logStream) return;
+
+    // Get timestamp of the newest entry currently displayed
+    const entries = logStream.querySelectorAll('.log-row-compact, .log-row');
+    if (entries.length === 0) {
+      window.location.reload();
+      return;
+    }
+
+    const lastEntry = entries[entries.length - 1];
+    const timeElement = lastEntry.querySelector('[title]');
+    if (!timeElement) return;
+
+    const newestTimestamp = timeElement.getAttribute('title');
+
+    // Get current filters from URL
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    // Add parameter to get entries after the newest timestamp
+    params.set('after', newestTimestamp);
+    params.set('limit', '100'); // Get up to 100 new entries
+
+    // Fetch new entries
+    fetch(`${url.pathname}?${params.toString()}`, {
+      headers: {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.entries && data.entries.length > 0) {
+        appendEntries(data.entries);
+        scrollToBottom();
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching new logs:', error);
+    });
+  }
+
+  function appendEntries(entriesHTML) {
+    const logStream = document.querySelector('.log-stream');
+    if (!logStream) return;
+
+    const temp = document.createElement('div');
+    temp.innerHTML = entriesHTML;
+
+    // Append new entries
+    while (temp.firstChild) {
+      logStream.appendChild(temp.firstChild);
+    }
+  }
+
   function scrollToBottom() {
-    if (isLiveTailActive) {
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: 'smooth'
-      });
+    if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
+      window.SolidLogStream.scrollToBottom();
+    } else {
+      const streamsMain = document.querySelector('.streams-main');
+      if (streamsMain) {
+        streamsMain.scrollTop = streamsMain.scrollHeight;
+      }
     }
   }
 
