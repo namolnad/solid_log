@@ -166,7 +166,7 @@ solid_log/
 ```ruby
 test "method is thread-safe" do
   counter = Concurrent::AtomicFixnum.new(0)
-  
+
   threads = 10.times.map do
     Thread.new do
       YourClass.expensive_operation do
@@ -174,9 +174,9 @@ test "method is thread-safe" do
       end
     end
   end
-  
+
   threads.each(&:join)
-  
+
   # Verify operation executed exactly once
   assert_equal 1, counter.value
 end
@@ -187,7 +187,7 @@ end
 ```ruby
 test "claim_batch prevents duplicate claims" do
   20.times { create_raw_entry }
-  
+
   claimed_ids = Concurrent::Set.new
   threads = 5.times.map do
     Thread.new do
@@ -195,9 +195,9 @@ test "claim_batch prevents duplicate claims" do
       batch.each { |entry| claimed_ids.add(entry.id) }
     end
   end
-  
+
   threads.each(&:join)
-  
+
   assert_equal 20, claimed_ids.size, "No duplicates should be claimed"
 end
 ```
@@ -210,11 +210,11 @@ test "without_logging prevents recursive logging" do
   subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*args|
     logged_queries << args unless Thread.current[:solid_log_silenced]
   end
-  
+
   SolidLog.without_logging do
-    RawEntry.create!(raw_payload: "{}", token_id: 1, received_at: Time.current)
+    RawEntry.create!(payload: "{}", token_id: 1, received_at: Time.current)
   end
-  
+
   assert_equal 0, logged_queries.size, "Should not log during silenced operations"
 ensure
   ActiveSupport::Notifications.unsubscribe(subscriber)
@@ -235,12 +235,12 @@ ActiveRecord::Base.logger = Logger.new(STDOUT)
 ```ruby
 test "my test" do
   # ... test code
-  
+
   # Debug database state
   puts "Raw entries: #{RawEntry.count}"
   puts "Unparsed: #{RawEntry.unparsed.count}"
   puts "Entries: #{Entry.count}"
-  
+
   # Inspect specific record
   pp RawEntry.last
 end
@@ -255,7 +255,7 @@ rails console
 # Manually test operations
 token = SolidLog::Token.generate!("Test")
 raw = SolidLog::RawEntry.create!(
-  raw_payload: {message: "test"}.to_json,
+  payload: {message: "test"}.to_json,
   token_id: token[:id],
   received_at: Time.current
 )
@@ -297,19 +297,19 @@ export SOLIDLOG_TEST_ADAPTER=postgresql
 # test/performance/ingestion_test.rb
 test "can ingest 1000 logs in under 1 second" do
   token = create_test_token
-  
+
   logs = 1000.times.map do |i|
     {
-      raw_payload: {message: "Log #{i}"}.to_json,
+      payload: {message: "Log #{i}"}.to_json,
       token_id: token[:id],
       received_at: Time.current
     }
   end
-  
+
   time = Benchmark.realtime do
     RawEntry.insert_all(logs)
   end
-  
+
   assert time < 1.0, "Bulk insert took #{time}s (should be < 1s)"
 end
 ```
@@ -319,13 +319,13 @@ end
 ```ruby
 test "parser processes 100 entries in under 2 seconds" do
   100.times { create_raw_entry }
-  
+
   time = Benchmark.realtime do
     while RawEntry.unparsed.any?
       ParserJob.perform_now
     end
   end
-  
+
   assert time < 2.0, "Parsing took #{time}s (should be < 2s)"
 end
 ```

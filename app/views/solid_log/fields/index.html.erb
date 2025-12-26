@@ -59,7 +59,7 @@
                     <td>
                       <%= form_with model: field, url: update_filter_type_field_path(field), method: :patch, class: "inline-form" do |f| %>
                         <%= f.select :filter_type,
-                            Field::FILTER_TYPES.map { |ft| [ft.titleize, ft] },
+                            SolidLog::Field::FILTER_TYPES.map { |ft| [ft.titleize, ft] },
                             {},
                             { class: "form-select form-select-small",
                               onchange: "this.form.requestSubmit()" } %>

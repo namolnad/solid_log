@@ -27,7 +27,7 @@ module SolidLog
           raw_entries = entries.map do |entry|
             {
               token_id: current_token.id,
-              raw_payload: entry.to_json,
+              payload: entry.to_json,
               received_at: Time.current,
               parsed: false
             }

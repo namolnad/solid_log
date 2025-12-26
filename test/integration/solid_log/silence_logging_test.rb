@@ -52,7 +52,7 @@ module SolidLog
     end
 
     test "middleware silences SolidLog requests" do
-      middleware = SilenceMiddleware.new(->(env) { [200, {}, ["OK"]] })
+      middleware = SilenceMiddleware.new(->(env) { [ 200, {}, [ "OK" ] ] })
 
       # SolidLog API request should set flag
       env = Rack::MockRequest.env_for("/solid_log/api/v1/ingest")
@@ -85,12 +85,12 @@ module SolidLog
 
       begin
         # Make API request to ingest a log
-        payload = {timestamp: Time.current.iso8601, level: "info", message: "test"}
+        payload = { timestamp: Time.current.iso8601, level: "info", message: "test" }
 
         # Simulate what the API controller does
         SolidLog.without_logging do
           RawEntry.create!(
-            raw_payload: payload.to_json,
+            payload: payload.to_json,
             token_id: token_result[:id],
             received_at: Time.current
           )

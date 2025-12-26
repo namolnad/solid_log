@@ -2,6 +2,7 @@
 SolidLog.configure do |config|
   # Maximum number of log entries to ingest in a single batch
   config.max_batch_size = 1000
+  config.facet_cache_ttl = nil # Cache filter dropdown values
 
   # Client configuration (for sending logs from this app to a SolidLog instance)
   # config.client_token = ENV['SOLID_LOG_TOKEN']
@@ -12,7 +13,6 @@ SolidLog.configure do |config|
   # config.error_retention_days = 90        # Keep errors longer
   # config.auto_promote_fields = false      # Auto-promote high-usage fields
   # config.field_promotion_threshold = 1000 # Usage threshold for auto-promotion
-  # config.facet_cache_ttl = 5.minutes      # Cache filter dropdown values
   # config.parser_concurrency = 5           # Concurrent parser workers
 end
 

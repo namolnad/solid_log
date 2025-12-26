@@ -3,7 +3,7 @@ class CreateSolidLogRaw < ActiveRecord::Migration[8.0]
     create_table :solid_log_raw do |t|
       t.datetime :received_at, null: false, default: -> { "CURRENT_TIMESTAMP" }
       t.integer :token_id, null: false
-      t.text :raw_payload, null: false
+      t.text :payload, null: false
       t.boolean :parsed, default: false, null: false
       t.datetime :parsed_at
     end

@@ -85,7 +85,7 @@ module SolidLogTestHelpers
 
     SolidLog.without_logging do
       SolidLog::RawEntry.create!(
-        raw_payload: payload.to_json,
+        payload: payload.to_json,
         token_id: token.is_a?(Hash) ? SolidLog::Token.find(token[:id]).id : token.id,
         received_at: Time.current
       )
@@ -109,7 +109,7 @@ module SolidLogTestHelpers
         @test_token ||= token
 
         raw_entry = SolidLog::RawEntry.create!(
-          raw_payload: defaults.merge(attributes).to_json,
+          payload: defaults.merge(attributes).to_json,
           token_id: @test_token[:id],
           received_at: Time.current
         )
@@ -132,7 +132,7 @@ module SolidLogTestHelpers
 
   # Helper to parse a raw entry
   def parse_raw_entry(raw_entry)
-    parsed = SolidLog::Parser.new.parse(raw_entry.raw_payload)
+    parsed = SolidLog::Parser.new.parse(raw_entry.payload)
     return nil if parsed.nil?
 
     SolidLog.without_logging do

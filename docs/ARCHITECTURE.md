@@ -135,7 +135,7 @@ CREATE TABLE solid_log_raw (
   id INTEGER PRIMARY KEY,
   received_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   token_id INTEGER NOT NULL,
-  raw_payload TEXT NOT NULL,  -- JSON string
+  payload TEXT NOT NULL,  -- JSON string
   parsed BOOLEAN DEFAULT 0,
   parsed_at DATETIME,
   FOREIGN KEY (token_id) REFERENCES solid_log_tokens(id)
@@ -349,8 +349,8 @@ end
 
 ```ruby
 # lib/solid_log/parser.rb
-def parse(raw_payload)
-  json = JSON.parse(raw_payload)
+def parse(payload)
+  json = JSON.parse(payload)
 
   # Extract standard fields
   {
@@ -384,7 +384,7 @@ Configured via `SolidLog.configuration.parser_concurrency`:
       break if batch.empty?
 
       batch.each do |raw_entry|
-        parsed = Parser.parse(raw_entry.raw_payload)
+        parsed = Parser.parse(raw_entry.payload)
         Entry.create!(parsed) if parsed
       end
 
@@ -733,7 +733,7 @@ end
 # app/models/solid_log/raw_entry.rb
 def self.create_from_ingest(payload)
   SolidLog.without_logging do
-    create!(raw_payload: payload)
+    create!(payload: payload)
   end
 end
 ```

@@ -52,17 +52,17 @@ module SolidLog
         end
 
         test "POST /ingest without auth token returns 401" do
-          payload = {level: "info", message: "test"}
+          payload = { level: "info", message: "test" }
 
           post "/solid_log/api/v1/ingest",
             params: payload.to_json,
-            headers: {"Content-Type" => "application/json"}
+            headers: { "Content-Type" => "application/json" }
 
           assert_response :unauthorized
         end
 
         test "POST /ingest with invalid token returns 401" do
-          payload = {level: "info", message: "test"}
+          payload = { level: "info", message: "test" }
 
           post "/solid_log/api/v1/ingest",
             params: payload.to_json,
@@ -89,7 +89,7 @@ module SolidLog
           token_record = Token.find(@token_result[:id])
           assert_nil token_record.last_used_at
 
-          payload = {level: "info", message: "test"}
+          payload = { level: "info", message: "test" }
 
           post "/solid_log/api/v1/ingest",
             params: payload.to_json,
@@ -119,7 +119,7 @@ module SolidLog
 
           raw_entry = RawEntry.last
           assert_not_nil raw_entry
-          stored_payload = JSON.parse(raw_entry.raw_payload)
+          stored_payload = JSON.parse(raw_entry.payload)
           assert_equal "test", stored_payload["message"]
           assert_equal "custom_value", stored_payload["custom_field"]
         end

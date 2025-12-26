@@ -39,7 +39,7 @@ All SolidLog internal operations use `SolidLog.without_logging`:
 
 ```ruby
 SolidLog.without_logging do
-  RawEntry.create!(raw_payload: payload)
+  RawEntry.create!(payload: payload)
   Entry.create!(parsed_data)
   Field.track("user_id", 42)
 end
@@ -55,7 +55,7 @@ If you're implementing a custom logger or log subscriber, check the silence flag
 ActiveSupport::Notifications.subscribe("sql.active_record") do |*args|
   # Skip if SolidLog is performing internal operations
   next if Thread.current[:solid_log_silenced]
-  
+
   event = ActiveSupport::Notifications::Event.new(*args)
   # ... send to SolidLog HTTP API
 end
@@ -68,7 +68,7 @@ class MySolidLogDevice
   def write(message)
     # Skip if SolidLog is performing internal operations
     return if Thread.current[:solid_log_silenced]
-    
+
     # Parse and send to SolidLog
     send_to_solidlog(message)
   end
@@ -106,11 +106,11 @@ Verify your logger respects the silence flag:
 ```ruby
 test "my_logger respects solid_log_silenced flag" do
   logged_messages = []
-  
+
   # Normal logging should work
   my_logger.info("Normal message")
   assert_equal 1, logged_messages.size
-  
+
   # Logging inside without_logging should be silenced
   SolidLog.without_logging do
     my_logger.info("Should be silenced")
@@ -142,7 +142,7 @@ SolidLog's approach is inspired by [discourse/logster](https://github.com/discou
 class MyBrokenLogger
   def write(message)
     # This will recursively call itself!
-    RawEntry.create!(raw_payload: message)
+    RawEntry.create!(payload: message)
   end
 end
 ```
@@ -154,7 +154,7 @@ end
 class MySafeLogger
   def write(message)
     return if Thread.current[:solid_log_silenced]
-    
+
     # Safe to call SolidLog HTTP API
     send_to_solidlog(message)
   end
@@ -169,7 +169,7 @@ The silence flag is thread-local, so concurrent requests are isolated:
 # Thread 1: SolidLog request
 Thread.current[:solid_log_silenced] = true
 
-# Thread 2: Normal user request  
+# Thread 2: Normal user request
 Thread.current[:solid_log_silenced] # => nil
 ```
 

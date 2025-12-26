@@ -1116,12 +1116,12 @@ end
 
 1. Check raw entries:
    ```ruby
-   RawEntry.where(parsed: false).first.raw_payload
+   RawEntry.where(parsed: false).first.payload
    ```
 
 2. Test parser manually:
    ```ruby
-   payload = RawEntry.unparsed.first.raw_payload
+   payload = RawEntry.unparsed.first.payload
    Parser.parse(payload)
    ```
 
@@ -1129,7 +1129,7 @@ end
    ```ruby
    RawEntry.where(parsed: false).find_each do |entry|
      begin
-       JSON.parse(entry.raw_payload)
+       JSON.parse(entry.payload)
      rescue JSON::ParserError
        entry.update(parsed: true)  # Mark as skipped
      end

@@ -16,7 +16,7 @@ module SolidLog
       end
 
       # Store plaintext token in flash for one-time display
-      flash[:token_plaintext] = @token.plaintext_token
+      flash[:token_plaintext] = @token[:token]
       redirect_to tokens_path, notice: "Token created successfully"
     rescue ActiveRecord::RecordInvalid => e
       @token = Token.new(token_params)

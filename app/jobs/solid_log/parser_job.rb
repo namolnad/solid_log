@@ -19,7 +19,7 @@ module SolidLog
         raw_entries.each do |raw_entry|
           begin
             # Parse the raw payload
-            parsed = Parser.parse(raw_entry.raw_payload)
+            parsed = Parser.parse(raw_entry.payload)
 
             # Extract dynamic fields for field registry
             extra_fields = parsed.delete(:extra_fields) || {}

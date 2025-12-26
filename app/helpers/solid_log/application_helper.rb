@@ -64,6 +64,12 @@ module SolidLog
       end
     end
 
+    def truncate_message(message, length: 200)
+      return "" if message.blank?
+
+      truncate(message, length: length, separator: " ")
+    end
+
     def highlight_search_term(text, query)
       return text if query.blank? || text.blank?
 

@@ -5,7 +5,7 @@ module SolidLog
     belongs_to :token, foreign_key: :token_id, optional: true
     has_one :entry, foreign_key: :raw_id, dependent: :destroy
 
-    validates :raw_payload, presence: true
+    validates :payload, presence: true
 
     scope :unparsed, -> { where(parsed: false) }
     scope :parsed, -> { where(parsed: true) }
@@ -19,9 +19,9 @@ module SolidLog
 
     # Get the parsed payload as a hash
     def payload_hash
-      @payload_hash ||= JSON.parse(raw_payload)
+      @payload_hash ||= JSON.parse(payload)
     rescue JSON::ParserError => e
-      Rails.logger.error "SolidLog: Failed to parse raw_payload for RawEntry #{id}: #{e.message}"
+      Rails.logger.error "SolidLog: Failed to parse payload for RawEntry #{id}: #{e.message}"
       {}
     end
 

@@ -11,7 +11,7 @@ module SolidLogTestHelpers
 
     SolidLog::RawEntry.create!(
       token_id: token.id,
-      raw_payload: payload.to_json
+      payload: payload.to_json
     )
   end
 

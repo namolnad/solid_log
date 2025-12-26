@@ -8,7 +8,7 @@ module SolidLog
 
     test "creates raw entry with valid attributes" do
       raw_entry = RawEntry.create!(
-        raw_payload: {level: "info", message: "test"}.to_json,
+        payload: { level: "info", message: "test" }.to_json,
         token_id: @token[:id],
         received_at: Time.current
       )
@@ -18,11 +18,11 @@ module SolidLog
       assert_nil raw_entry.parsed_at
     end
 
-    test "validates presence of raw_payload" do
+    test "validates presence of payload" do
       raw_entry = RawEntry.new(token_id: @token[:id])
 
       assert_not raw_entry.valid?
-      assert_includes raw_entry.errors[:raw_payload], "can't be blank"
+      assert_includes raw_entry.errors[:payload], "can't be blank"
     end
 
     test "unparsed scope returns only unparsed entries" do
@@ -31,7 +31,7 @@ module SolidLog
 
       unparsed = create_raw_entry(token: @token)
 
-      assert_equal [unparsed], RawEntry.unparsed.to_a
+      assert_equal [ unparsed ], RawEntry.unparsed.to_a
     end
 
     test "parsed scope returns only parsed entries" do
@@ -40,7 +40,7 @@ module SolidLog
 
       create_raw_entry(token: @token)
 
-      assert_equal [parsed], RawEntry.parsed.to_a
+      assert_equal [ parsed ], RawEntry.parsed.to_a
     end
 
     test "stale_unparsed returns entries older than threshold" do
@@ -67,7 +67,7 @@ module SolidLog
     end
 
     test "payload_hash returns parsed JSON" do
-      payload = {level: "info", message: "test", user_id: 42}
+      payload = { level: "info", message: "test", user_id: 42 }
       raw_entry = create_raw_entry(payload: payload, token: @token)
 
       assert_equal payload.stringify_keys, raw_entry.payload_hash
@@ -75,7 +75,7 @@ module SolidLog
 
     test "payload_hash returns empty hash for invalid JSON" do
       raw_entry = RawEntry.create!(
-        raw_payload: "{invalid json",
+        payload: "{invalid json",
         token_id: @token[:id],
         received_at: Time.current
       )

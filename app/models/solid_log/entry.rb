@@ -13,31 +13,31 @@ module SolidLog
     scope :by_level, ->(level) { where(level: level) if level.present? }
     scope :by_app, ->(app) {
       return all if app.blank?
-      app.is_a?(Array) ? where(app: app.reject(&:blank?)) : where(app: app)
+      app.is_a?(Array) ? where(app: Array(app).flatten.reject(&:blank?)) : where(app: app)
     }
     scope :by_env, ->(env) {
       return all if env.blank?
-      env.is_a?(Array) ? where(env: env.reject(&:blank?)) : where(env: env)
+      env.is_a?(Array) ? where(env: Array(env).flatten.reject(&:blank?)) : where(env: env)
     }
     scope :by_controller, ->(controller) {
       return all if controller.blank?
-      controller.is_a?(Array) ? where(controller: controller.reject(&:blank?)) : where(controller: controller)
+      controller.is_a?(Array) ? where(controller: Array(controller).flatten.reject(&:blank?)) : where(controller: controller)
     }
     scope :by_action, ->(action) {
       return all if action.blank?
-      action.is_a?(Array) ? where(action: action.reject(&:blank?)) : where(action: action)
+      action.is_a?(Array) ? where(action: Array(action).flatten.reject(&:blank?)) : where(action: action)
     }
     scope :by_path, ->(path) {
       return all if path.blank?
-      path.is_a?(Array) ? where(path: path.reject(&:blank?)) : where(path: path)
+      path.is_a?(Array) ? where(path: Array(path).flatten.reject(&:blank?)) : where(path: path)
     }
     scope :by_method, ->(method) {
       return all if method.blank?
-      method.is_a?(Array) ? where(method: method.reject(&:blank?)) : where(method: method)
+      method.is_a?(Array) ? where(method: Array(method).flatten.reject(&:blank?)) : where(method: method)
     }
     scope :by_status_code, ->(status_code) {
       return all if status_code.blank?
-      status_code.is_a?(Array) ? where(status_code: status_code.reject(&:blank?)) : where(status_code: status_code)
+      status_code.is_a?(Array) ? where(status_code: Array(status_code).flatten.reject(&:blank?)) : where(status_code: status_code)
     }
     scope :by_request_id, ->(request_id) { where(request_id: request_id) if request_id.present? }
     scope :by_job_id, ->(job_id) { where(job_id: job_id) if job_id.present? }
@@ -63,11 +63,7 @@ module SolidLog
       adapter = SolidLog.adapter
       return all unless adapter.supports_full_text_search?
 
-      # Use database-specific FTS implementation
-      # SQLite FTS5: JOIN fts table and use MATCH
-      sanitized_query = connection.quote(query)
-      joins("JOIN solid_log_entries_fts ON solid_log_entries.id = solid_log_entries_fts.rowid")
-        .where("solid_log_entries_fts MATCH #{sanitized_query}")
+      adapter.fts_search(query)
     rescue => e
       Rails.logger.error("Full-text search error: #{e.message}")
       all
@@ -78,7 +74,7 @@ module SolidLog
       return all if field_name.blank?
 
       adapter = SolidLog.adapter
-      json_extract = adapter.extract_json_field('extra_fields', field_name)
+      json_extract = adapter.extract_json_field("extra_fields", field_name)
 
       # SQLite json_extract returns values with their JSON types
       # For numeric values, we need to handle both string and number comparisons

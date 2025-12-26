@@ -154,12 +154,12 @@ require "json"
 
 def send_to_solidlog(message, level: "info", **extra_fields)
   uri = URI("http://localhost:3000/solid_log/api/v1/ingest")
-  
+
   http = Net::HTTP.new(uri.host, uri.port)
   request = Net::HTTP::Post.new(uri.path)
   request["Authorization"] = "Bearer #{ENV['SOLIDLOG_TOKEN']}"
   request["Content-Type"] = "application/json"
-  
+
   payload = {
     timestamp: Time.current.iso8601,
     level: level,
@@ -167,7 +167,7 @@ def send_to_solidlog(message, level: "info", **extra_fields)
     app: "myapp",
     env: Rails.env
   }.merge(extra_fields)
-  
+
   request.body = payload.to_json
   http.request(request)
 end
@@ -244,7 +244,7 @@ Rails.logger.info "This will be sent to SolidLog"
 
 # Send a log via HTTP (this should NOT create infinite recursion)
 SolidLog::RawEntry.create!(
-  raw_payload: {message: "Test"}.to_json,
+  payload: {message: "Test"}.to_json,
   token_id: 1,
   received_at: Time.current
 )

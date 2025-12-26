@@ -116,7 +116,7 @@ module SolidLog
 
       # Verify chronological order
       messages = timeline.pluck(:message)
-      assert_equal ["Request step 0", "Request step 1", "Request step 2"], messages.reverse
+      assert_equal [ "Request step 0", "Request step 1", "Request step 2" ], messages.reverse
     end
 
     test "field promotion flow" do
@@ -130,7 +130,7 @@ module SolidLog
         }
 
         RawEntry.create!(
-          raw_payload: payload.to_json,
+          payload: payload.to_json,
           token_id: Token.find(@token_result[:id]).id,
           received_at: Time.current
         )

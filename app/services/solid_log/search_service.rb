@@ -2,7 +2,7 @@ module SolidLog
   class SearchService
     def initialize(params = {})
       @params = params
-      @cache_enabled = true
+      @cache_enabled = SolidLog.configuration.facet_cache_ttl.present?
     end
 
     def search
@@ -51,7 +51,7 @@ module SolidLog
       scope = apply_level_filter(scope)
       scope = apply_app_filter(scope)
       scope = apply_env_filter(scope)
-      scope = apply_controller_filter(scope)
+      # scope = apply_controller_filter(scope)
       scope = apply_action_filter(scope)
       scope = apply_path_filter(scope)
       scope = apply_method_filter(scope)
@@ -206,7 +206,7 @@ module SolidLog
     end
 
     def cached_facets
-      FacetCache.fetch("facets:all", ttl: 5.minutes) do
+      FacetCache.fetch("facets:all", ttl: cache_ttl) do
         facets = {
           levels: Entry.facets_for("level"),
           apps: Entry.facets_for("app"),
@@ -223,7 +223,11 @@ module SolidLog
     end
 
     def cache_facets(facets)
-      FacetCache.store("facets:all", facets, ttl: 5.minutes)
+      FacetCache.store("facets:all", facets, ttl: cache_ttl)
+    end
+
+    def cache_ttl
+      SolidLog.configuration.facet_cache_ttl
     end
   end
 end

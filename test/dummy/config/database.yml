@@ -17,7 +17,7 @@ development:
     <<: *default
     database: storage/development_log.sqlite3
     migrations_paths: db/log_migrate
-    schema_dump: :sql
+    schema_format: :sql
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -30,7 +30,7 @@ test:
     <<: *default
     database: storage/test_log.sqlite3
     migrations_paths: db/log_migrate
-    schema_dump: :sql
+    schema_format: :sql
 
 
 # SQLite3 write its data on the local filesystem, as such it requires
@@ -47,5 +47,4 @@ production:
     <<: *default
     database: storage/production_log.sqlite3
     migrations_paths: db/log_migrate
-    schema_dump: :sql
-  # database: path/to/persistent/storage/production.sqlite3
+    schema_format: :sql
