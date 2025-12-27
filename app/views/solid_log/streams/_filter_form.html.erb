@@ -1,163 +1,107 @@
 <div class="filter-form">
   <h3>Filters</h3>
-
   <%= form_with url: streams_path, method: :get do |f| %>
-    <div class="filter-group">
+    <div class="filter-form-content">
+      <div class="filter-group">
       <label>Search</label>
       <%= f.text_field "filters[query]", value: @current_filters[:query],
           placeholder: "Search messages...",
           class: "form-input" %>
     </div>
 
-    <% if @available_filters[:levels]&.any? %>
+    <% if @available_filters[:levels]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>Log Level</label>
-        <% @available_filters[:levels].each do |level| %>
-          <div class="checkbox-item">
-            <%= checkbox_tag "filters[levels][]", level,
-                @current_filters[:levels].include?(level),
-                id: "level_#{level}" %>
-            <%= f.label "level_#{level}" do %>
-              <%= level_badge(level) %>
-            <% end %>
-          </div>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[levels]",
+            options: @available_filters[:levels],
+            selected: @current_filters[:levels],
+            label: "Select Log Levels",
+            id_prefix: "level" %>
       </div>
     <% end %>
 
-    <% if @available_filters[:apps]&.any? %>
+    <% if @available_filters[:apps]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>Application</label>
-        <% if @available_filters[:apps].size <= 5 %>
-          <% @available_filters[:apps].each do |app_name| %>
-            <div class="checkbox-item">
-              <%= checkbox_tag "filters[app][]", app_name,
-                  @current_filters[:app].include?(app_name),
-                  id: "app_#{app_name.parameterize}" %>
-              <%= f.label "app_#{app_name.parameterize}", app_name %>
-            </div>
-          <% end %>
-        <% else %>
-          <%= render "solid_log/shared/checkbox_dropdown",
-              field_name: "filters[app]",
-              options: @available_filters[:apps],
-              selected: @current_filters[:app],
-              label: "Select Applications",
-              id_prefix: "app" %>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[app]",
+            options: @available_filters[:apps],
+            selected: @current_filters[:app],
+            label: "Select Applications",
+            id_prefix: "app" %>
       </div>
     <% end %>
 
-    <% if @available_filters[:envs]&.any? %>
+    <% if @available_filters[:envs]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>Environment</label>
-        <% @available_filters[:envs].each do |env_name| %>
-          <div class="checkbox-item">
-            <%= checkbox_tag "filters[env][]", env_name,
-                @current_filters[:env].include?(env_name),
-                id: "env_#{env_name.parameterize}" %>
-            <%= f.label "env_#{env_name.parameterize}", env_name %>
-          </div>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[env]",
+            options: @available_filters[:envs],
+            selected: @current_filters[:env],
+            label: "Select Environments",
+            id_prefix: "env" %>
       </div>
     <% end %>
 
-    <% if @available_filters[:controllers]&.any? %>
+    <% if @available_filters[:controllers]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>Controller</label>
-        <% if @available_filters[:controllers].size <= 1 %>
-          <% @available_filters[:controllers].each do |controller_name| %>
-            <div class="checkbox-item">
-              <%= checkbox_tag "filters[controller][]", controller_name,
-                  @current_filters[:controller].include?(controller_name),
-                  id: "controller_#{controller_name.parameterize}" %>
-              <%= f.label "controller_#{controller_name.parameterize}", controller_name %>
-            </div>
-          <% end %>
-        <% else %>
-          <%= render "solid_log/shared/checkbox_dropdown",
-              field_name: "filters[controller]",
-              options: @available_filters[:controllers],
-              selected: @current_filters[:controller],
-              label: "Select Controllers",
-              id_prefix: "controller" %>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[controller]",
+            options: @available_filters[:controllers],
+            selected: @current_filters[:controller],
+            label: "Select Controllers",
+            id_prefix: "controller" %>
       </div>
     <% end %>
 
-    <% if @available_filters[:actions]&.any? %>
+    <% if @available_filters[:actions]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>Action</label>
-        <% if @available_filters[:actions].size <= 5 %>
-          <% @available_filters[:actions].each do |action_name| %>
-            <div class="checkbox-item">
-              <%= checkbox_tag "filters[action][]", action_name,
-                  @current_filters[:action].include?(action_name),
-                  id: "action_#{action_name.parameterize}" %>
-              <%= f.label "action_#{action_name.parameterize}", action_name %>
-            </div>
-          <% end %>
-        <% else %>
-          <%= render "solid_log/shared/checkbox_dropdown",
-              field_name: "filters[action]",
-              options: @available_filters[:actions],
-              selected: @current_filters[:action],
-              label: "Select Actions",
-              id_prefix: "action" %>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[action]",
+            options: @available_filters[:actions],
+            selected: @current_filters[:action],
+            label: "Select Actions",
+            id_prefix: "action" %>
       </div>
     <% end %>
 
-    <% if @available_filters[:methods]&.any? %>
+    <% if @available_filters[:methods]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>HTTP Method</label>
-        <% @available_filters[:methods].each do |method_name| %>
-          <div class="checkbox-item">
-            <%= checkbox_tag "filters[method][]", method_name,
-                @current_filters[:method].include?(method_name),
-                id: "method_#{method_name.parameterize}" %>
-            <%= f.label "method_#{method_name.parameterize}", method_name %>
-          </div>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[method]",
+            options: @available_filters[:methods],
+            selected: @current_filters[:method],
+            label: "Select Methods",
+            id_prefix: "method" %>
       </div>
     <% end %>
 
-    <% if @available_filters[:paths]&.any? %>
+    <% if @available_filters[:paths]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>Path</label>
-        <% if @available_filters[:paths].size <= 5 %>
-          <% @available_filters[:paths].each do |path_name| %>
-            <div class="checkbox-item">
-              <%= checkbox_tag "filters[path][]", path_name,
-                  @current_filters[:path].include?(path_name),
-                  id: "path_#{path_name.parameterize}" %>
-              <%= f.label "path_#{path_name.parameterize}", path_name %>
-            </div>
-          <% end %>
-        <% else %>
-          <%= render "solid_log/shared/checkbox_dropdown",
-              field_name: "filters[path]",
-              options: @available_filters[:paths],
-              selected: @current_filters[:path],
-              label: "Select Paths",
-              id_prefix: "path" %>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[path]",
+            options: @available_filters[:paths],
+            selected: @current_filters[:path],
+            label: "Select Paths",
+            id_prefix: "path" %>
       </div>
     <% end %>
 
-    <% if @available_filters[:status_codes]&.any? %>
+    <% if @available_filters[:status_codes]&.size.to_i > 1 %>
       <div class="filter-group">
         <label>Status Code</label>
-        <% @available_filters[:status_codes].each do |code| %>
-          <div class="checkbox-item">
-            <%= checkbox_tag "filters[status_code][]", code,
-                @current_filters[:status_code].include?(code.to_s),
-                id: "status_code_#{code}" %>
-            <%= f.label "status_code_#{code}" do %>
-              <%= http_status_badge(code) %>
-            <% end %>
-          </div>
-        <% end %>
+        <%= render "solid_log/shared/multiselect_filter",
+            field_name: "filters[status_code]",
+            options: @available_filters[:status_codes],
+            selected: @current_filters[:status_code],
+            label: "Select Status Codes",
+            id_prefix: "status_code" %>
       </div>
     <% end %>
 
@@ -202,7 +146,7 @@
     <%# Dynamically render promoted field filters with facets %>
     <% @available_filters.each do |key, values| %>
       <% next if [:levels, :apps, :envs, :controllers, :actions, :methods, :paths, :status_codes].include?(key) %>
-      <% next unless values&.any? %>
+      <% next unless values&.size.to_i > 1 %>
 
       <% field = SolidLog::Field.promoted.find_by(name: key.to_s) %>
       <% next unless field %>
@@ -212,23 +156,12 @@
 
         <% case field.filter_type %>
         <% when "multiselect" %>
-          <% if values.size <= 5 %>
-            <% values.each do |value| %>
-              <div class="checkbox-item">
-                <%= checkbox_tag "filters[#{key}][]", value,
-                    Array(@current_filters[key]).include?(value),
-                    id: "#{key}_#{value.to_s.parameterize}" %>
-                <%= f.label "#{key}_#{value.to_s.parameterize}", value %>
-              </div>
-            <% end %>
-          <% else %>
-            <%= render "solid_log/shared/checkbox_dropdown",
-                field_name: "filters[#{key}]",
-                options: values,
-                selected: Array(@current_filters[key]),
-                label: "Select #{key.to_s.titleize}",
-                id_prefix: key.to_s %>
-          <% end %>
+          <%= render "solid_log/shared/multiselect_filter",
+              field_name: "filters[#{key}]",
+              options: values,
+              selected: Array(@current_filters[key]),
+              label: "Select #{key.to_s.titleize}",
+              id_prefix: key.to_s %>
 
         <% when "range" %>
           <div class="time-inputs">
@@ -264,6 +197,7 @@
         <small class="form-hint">Enter multiple values separated by commas</small>
       </div>
     <% end %>
+    </div>
 
     <div class="filter-actions">
       <%= f.submit "Apply Filters", class: "btn btn-primary btn-block" %>

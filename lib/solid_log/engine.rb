@@ -22,6 +22,7 @@ module SolidLog
           solid_log/checkbox_dropdown.js
           solid_log/timeline_histogram.js
           solid_log/log_filters.js
+          solid_log/filter_state.js
         ]
       end
       # Propshaft automatically discovers assets in app/assets via its railtie

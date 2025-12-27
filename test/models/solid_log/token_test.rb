@@ -9,7 +9,8 @@ module SolidLog
       assert token.persisted?
       assert_equal "Test API", token.name
       assert token.token_hash.present?
-      assert token.token_hash.start_with?("$2a$")  # BCrypt hash
+      assert_equal 64, token.token_hash.length  # HMAC-SHA256 hex digest
+      assert_match /^[a-f0-9]{64}$/, token.token_hash  # Hex string
     end
 
     test "generate! returns plaintext token only once" do

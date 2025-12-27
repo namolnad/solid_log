@@ -71,13 +71,13 @@ module SolidLog
       start_time = if @current_filters[:start_time].present?
         Time.zone.parse(@current_filters[:start_time])
       else
-        @entries.first.created_at  # oldest entry
+        @entries.first.timestamp  # oldest entry
       end
 
       end_time = if @current_filters[:end_time].present?
         Time.zone.parse(@current_filters[:end_time])
       else
-        @entries.last.created_at  # newest entry
+        @entries.last.timestamp  # newest entry
       end
 
       # Calculate appropriate bucket size based on time range
@@ -102,7 +102,7 @@ module SolidLog
         # break if current_time >= end_time
 
         # Count entries in this bucket (from all entries matching current filters, not just displayed)
-        count = Entry.where(created_at: current_time...bucket_end)
+        count = Entry.where(timestamp: current_time...bucket_end)
           .yield_self { |scope| apply_current_filters_to_scope(scope) }
           .count
 

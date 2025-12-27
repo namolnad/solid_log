@@ -13,8 +13,8 @@ SolidLog::Engine.routes.draw do
   resources :entries, only: [ :index, :show ]
 
   # Timeline routes for correlation
-  get "timelines/request/:request_id", to: "timelines#request", as: :request_timeline
-  get "timelines/job/:job_id", to: "timelines#job", as: :job_timeline
+  get "timelines/request/:request_id", to: "timelines#show_request", as: :request_timeline
+  get "timelines/job/:job_id", to: "timelines#show_job", as: :job_timeline
 
   # Field management
   resources :fields, only: [ :index, :destroy ] do

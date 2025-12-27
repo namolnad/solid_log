@@ -1,7 +1,7 @@
 module SolidLog
   class Parser
     STANDARD_FIELDS = %w[
-      timestamp created_at occurred_at time
+      timestamp time occurred_at created_at
       level severity
       message msg text
       request_id
@@ -52,8 +52,9 @@ module SolidLog
     def extract_standard_fields(payload)
       fields = {}
 
-      # Timestamp (required)
-      fields[:created_at] = extract_timestamp(payload)
+      # Timestamp (required) - when the log event occurred
+      # created_at will be set automatically by Rails when the entry is saved
+      fields[:timestamp] = extract_timestamp(payload)
 
       # Level (required, default to info)
       fields[:level] = normalize_level(payload["level"] || payload["severity"] || "info")
@@ -102,9 +103,9 @@ module SolidLog
       VALID_LEVELS.include?(level_str) ? level_str : "info"
     end
 
-    # Extract timestamp from various field names
+    # Extract timestamp from various field names (when the log event occurred)
     def extract_timestamp(payload)
-      timestamp_fields = %w[timestamp created_at occurred_at time]
+      timestamp_fields = %w[timestamp time occurred_at created_at]
 
       timestamp_fields.each do |field|
         value = payload[field]

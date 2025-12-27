@@ -1,31 +1,31 @@
-<div class="stream-footer">
-  <div class="stream-footer-row">
-    <div class="stream-footer-left">
-      <%= render "timeline" %>
-    </div>
+<%= render "timeline" %>
 
-    <div class="stream-footer-right">
-      <button type="button" id="jump-to-live" class="btn btn-secondary btn-small">
-        ↓ Jump to Live
-      </button>
+<div class="stream-footer-controls">
+  <button type="button" id="jump-to-live" class="btn btn-secondary btn-small">
+    ↓ Jump to Live
+  </button>
 
-      <button type="button" id="live-tail-toggle" class="btn btn-secondary btn-small">
-        ▶ Live Tail
-      </button>
-    </div>
-  </div>
+  <button type="button" id="live-tail-toggle" class="btn btn-secondary btn-small">
+    ▶ Live Tail
+  </button>
 </div>
 
 <script>
-  // Jump to Now button functionality
+  // Jump to Live button functionality - refresh and scroll to bottom
   document.addEventListener('DOMContentLoaded', function() {
     const jumpButton = document.getElementById('jump-to-live');
     if (jumpButton) {
       jumpButton.addEventListener('click', function() {
-        if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
-          window.SolidLogStream.scrollToBottom();
-        }
+        // Reload the page to get latest logs
+        window.location.reload();
       });
+    }
+  });
+
+  // After page loads, scroll to bottom
+  document.addEventListener('turbo:load', function() {
+    if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
+      window.SolidLogStream.scrollToBottom();
     }
   });
 </script>

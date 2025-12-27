@@ -1,6 +1,6 @@
 module SolidLog
   class TimelinesController < ApplicationController
-    def request
+    def show_request
       @request_id = params[:request_id]
 
       @entries = SolidLog.without_logging do
@@ -12,7 +12,7 @@ module SolidLog
       end
     end
 
-    def job
+    def show_job
       @job_id = params[:job_id]
 
       @entries = SolidLog.without_logging do

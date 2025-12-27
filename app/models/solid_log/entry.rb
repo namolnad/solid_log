@@ -2,9 +2,13 @@ module SolidLog
   class Entry < ApplicationRecord
     self.table_name = "solid_log_entries"
 
+    # Explicitly define attribute type to ensure proper casting from SQLite
+    attribute :timestamp, :datetime
+
     belongs_to :raw_entry, foreign_key: :raw_id, optional: true
 
     validates :level, presence: true
+    validates :timestamp, presence: true
     validates :created_at, presence: true
 
     LOG_LEVELS = %w[debug info warn error fatal unknown].freeze
@@ -43,8 +47,8 @@ module SolidLog
     scope :by_job_id, ->(job_id) { where(job_id: job_id) if job_id.present? }
     scope :by_time_range, ->(start_time, end_time) {
       scope = all
-      scope = scope.where("created_at >= ?", start_time) if start_time.present?
-      scope = scope.where("created_at <= ?", end_time) if end_time.present?
+      scope = scope.where("timestamp >= ?", start_time) if start_time.present?
+      scope = scope.where("timestamp <= ?", end_time) if end_time.present?
       scope
     }
     scope :by_duration_range, ->(min_duration, max_duration) {
@@ -53,7 +57,7 @@ module SolidLog
       scope = scope.where("duration <= ?", max_duration) if max_duration.present?
       scope
     }
-    scope :recent, -> { order(created_at: :asc) } # Ascending for terminal-style view (newest at bottom)
+    scope :recent, -> { order(timestamp: :asc) } # Ascending for terminal-style view (newest at bottom)
     scope :errors, -> { where(level: %w[error fatal]) }
 
     # Full-text search (database-agnostic)

@@ -26,7 +26,7 @@
       <div class="stat-label">Error Rate (1h)</div>
       <div class="stat-value error-count"><%= @health_metrics[:performance][:error_rate] %>%</div>
       <div class="stat-footer">
-        <%= link_to "View errors →", streams_path(levels: ["error", "fatal"]), class: "stat-link" %>
+        <%= link_to "View errors →", streams_path(filters: { levels: ["error", "fatal"] }), class: "stat-link" %>
       </div>
     </div>
 

@@ -28,7 +28,8 @@ module SolidLog
             # Prepare entry for insertion
             entry_data = {
               raw_id: raw_entry.id,
-              created_at: parsed[:created_at],
+              timestamp: parsed[:timestamp],
+              created_at: Time.current, # When entry was parsed/created
               level: parsed[:level],
               app: parsed[:app],
               env: parsed[:env],

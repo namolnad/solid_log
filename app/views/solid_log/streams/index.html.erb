@@ -1,7 +1,3 @@
-<% content_for :stream_footer do %>
-  <%= render "footer" %>
-<% end %>
-
 <div class="streams-page">
   <div class="streams-container">
     <div class="streams-sidebar">
@@ -20,6 +16,11 @@
           <% @entries.each do |entry| %>
             <%= render "log_row", entry: entry, query: @current_filters[:query] %>
           <% end %>
+        </div>
+
+        <!-- Stream Footer inside terminal view -->
+        <div class="stream-footer-inline">
+          <%= render "footer" %>
         </div>
       <% end %>
     </div>

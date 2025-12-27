@@ -18,24 +18,15 @@
 <div class="checkbox-dropdown-portal" data-controller="checkbox-dropdown">
   <button type="button" class="checkbox-dropdown-toggle" data-action="click->checkbox-dropdown#toggle" aria-expanded="false">
     <div class="dropdown-toggle-content">
-      <span class="dropdown-label"><%= label %></span>
-      <% if selected_count > 0 %>
-        <span class="badge badge-small"><%= selected_count %></span>
+      <% if selected_items.any? %>
+        <span class="dropdown-label"><%= selected_items.join(', ').truncate(50) %></span>
+      <% else %>
+        <span class="dropdown-label dropdown-label-placeholder"><%= label %></span>
       <% end %>
+      <span class="badge badge-small" style="<%= 'display: none;' if selected_count == 0 %>"><%= selected_count %></span>
     </div>
     <span class="dropdown-arrow">▼</span>
   </button>
-
-  <% if selected_items.any? %>
-    <div class="checkbox-dropdown-preview">
-      <% selected_items.first(3).each do |item| %>
-        <span class="preview-tag"><%= item %></span>
-      <% end %>
-      <% if selected_items.size > 3 %>
-        <span class="preview-more">+<%= selected_items.size - 3 %> more</span>
-      <% end %>
-    </div>
-  <% end %>
 
   <!-- Portal/Popover Menu (positioned absolutely across full sidebar width) -->
   <div class="checkbox-dropdown-popover" data-checkbox-dropdown-target="menu" style="display: none;">
@@ -62,6 +53,12 @@
           <%= label_tag "#{id_prefix}_#{option.to_s.parameterize}", option %>
         </div>
       <% end %>
+    </div>
+
+    <div class="popover-footer">
+      <button type="button" class="btn btn-primary btn-small btn-block" data-action="click->checkbox-dropdown#close">
+        Done
+      </button>
     </div>
   </div>
 </div>

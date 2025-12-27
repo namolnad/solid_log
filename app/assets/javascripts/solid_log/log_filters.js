@@ -14,8 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (!filterType || !filterValue) return;
 
-      // Build URL using current location as base
-      const url = new URL(window.location.origin + window.location.pathname);
+      // Always redirect to streams index when filtering
+      const streamsPath = document.body.dataset.streamsPath || '/streams';
+      const url = new URL(window.location.origin + streamsPath);
 
       // Map filter types to URL parameters
       const paramMapping = {

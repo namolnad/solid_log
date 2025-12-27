@@ -1,0 +1,37 @@
+<%# Multi-select filter component with automatic dropdown for N > 3
+  Required params:
+    - field_name: the form field name (e.g., "filters[controller]")
+    - options: array of values to display
+    - selected: array of currently selected values
+    - label: display label for the filter
+  Optional params:
+    - id_prefix: prefix for checkbox IDs (defaults to field_name)
+    - threshold: number of options at which to use dropdown (default: 4)
+    - form: form builder object (required if not using checkbox_tag directly)
+%>
+
+<%
+  threshold = local_assigns[:threshold] || 4
+  id_prefix = local_assigns[:id_prefix] || field_name.gsub(/[\[\]]/, '_')
+  form = local_assigns[:form]
+%>
+
+<% if options.size < threshold %>
+  <%# Show checkboxes inline for small lists %>
+  <% options.each do |option| %>
+    <div class="checkbox-item">
+      <%= check_box_tag "#{field_name}[]", option,
+          selected.include?(option),
+          id: "#{id_prefix}_#{option.to_s.parameterize}" %>
+      <%= label_tag "#{id_prefix}_#{option.to_s.parameterize}", option %>
+    </div>
+  <% end %>
+<% else %>
+  <%# Use dropdown for large lists %>
+  <%= render "solid_log/shared/checkbox_dropdown",
+      field_name: field_name,
+      options: options,
+      selected: selected,
+      label: label,
+      id_prefix: id_prefix %>
+<% end %>

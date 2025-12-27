@@ -2,9 +2,9 @@ CREATE TABLE IF NOT EXISTS "solid_log_raw" ("id" integer PRIMARY KEY AUTOINCREME
 CREATE INDEX "idx_raw_unparsed" ON "solid_log_raw" ("parsed", "received_at") /*application='Dummy'*/;
 CREATE INDEX "idx_raw_received" ON "solid_log_raw" ("received_at") /*application='Dummy'*/;
 CREATE INDEX "idx_raw_token" ON "solid_log_raw" ("token_id") /*application='Dummy'*/;
-CREATE TABLE IF NOT EXISTS "solid_log_entries" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "raw_id" integer NOT NULL, "created_at" datetime(6) NOT NULL, "level" varchar NOT NULL, "app" varchar, "env" varchar, "message" text, "request_id" varchar, "job_id" varchar, "duration" float, "status_code" integer, "controller" varchar, "action" varchar, "path" varchar, "method" varchar, "extra_fields" text);
-CREATE INDEX "idx_entries_app_env_time" ON "solid_log_entries" ("app", "env", "created_at" DESC) /*application='Dummy'*/;
-CREATE INDEX "idx_entries_timestamp" ON "solid_log_entries" ("created_at" DESC) /*application='Dummy'*/;
+CREATE TABLE IF NOT EXISTS "solid_log_entries" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "raw_id" integer NOT NULL, "timestamp" datetime(6) NOT NULL, "created_at" datetime(6) NOT NULL, "level" varchar NOT NULL, "app" varchar, "env" varchar, "message" text, "request_id" varchar, "job_id" varchar, "duration" float, "status_code" integer, "controller" varchar, "action" varchar, "path" varchar, "method" varchar, "extra_fields" text);
+CREATE INDEX "idx_entries_app_env_time" ON "solid_log_entries" ("app", "env", "timestamp" DESC) /*application='Dummy'*/;
+CREATE INDEX "idx_entries_timestamp" ON "solid_log_entries" ("timestamp" DESC) /*application='Dummy'*/;
 CREATE INDEX "idx_entries_job" ON "solid_log_entries" ("job_id") /*application='Dummy'*/;
 CREATE INDEX "idx_entries_level" ON "solid_log_entries" ("level") /*application='Dummy'*/;
 CREATE INDEX "idx_entries_raw" ON "solid_log_entries" ("raw_id") /*application='Dummy'*/;
