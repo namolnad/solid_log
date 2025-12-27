@@ -87,21 +87,10 @@
       {
         connected() {
           console.log('Connected to log stream');
-
-          // Send heartbeat every 2 minutes to keep cache entry alive
-          this.heartbeatInterval = setInterval(() => {
-            this.perform('refresh_subscription');
-          }, 2 * 60 * 1000);
         },
 
         disconnected() {
           console.log('Disconnected from log stream');
-
-          // Clear heartbeat interval
-          if (this.heartbeatInterval) {
-            clearInterval(this.heartbeatInterval);
-            this.heartbeatInterval = null;
-          }
 
           // Reset button state to show stream has stopped
           resetLiveTailButton();
@@ -218,14 +207,39 @@
     return filters;
   }
 
-  function resetLiveTailButton() {
-    const button = document.getElementById('live-tail-toggle');
-    if (button) {
-      button.textContent = '▶ Live Tail';
-      button.classList.remove('btn-primary');
-      button.classList.add('btn-secondary');
-      liveTailActive = false;
+  function entryMatchesFilters(entry) {
+    const filters = getCurrentFilters();
+
+    // If no filters, show all entries
+    if (Object.keys(filters).length === 0) {
+      return true;
     }
+
+    // Check each filter
+    for (const [key, values] of Object.entries(filters)) {
+      if (!values || values.length === 0) continue;
+
+      // Get the entry's value for this filter
+      const entryValue = entry[key];
+      if (!entryValue) {
+        // If filter is set but entry doesn't have this field, exclude it
+        return false;
+      }
+
+      // For array filters (levels, app, etc.), check if entry value is in the filter array
+      if (Array.isArray(values)) {
+        if (!values.includes(String(entryValue))) {
+          return false;
+        }
+      } else {
+        // For single value filters
+        if (String(entryValue) !== String(values)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   function scrollToBottom() {
@@ -250,22 +264,6 @@
 
   // Re-initialize on turbo navigation
   document.addEventListener('turbo:load', initializeLiveTail);
-
-  // Stop live tail when navigating away or changing filters
-  document.addEventListener('turbo:before-visit', function() {
-    if (liveTailActive) {
-      stopLiveTail();
-      console.log('Stopped live tail due to navigation');
-    }
-  });
-
-  // Stop live tail when filter form is submitted
-  document.addEventListener('submit', function(e) {
-    if (e.target.closest('.filter-form') && liveTailActive) {
-      stopLiveTail();
-      console.log('Stopped live tail due to filter change');
-    }
-  });
 
   // Clean up on page unload
   window.addEventListener('beforeunload', stopLiveTail);
