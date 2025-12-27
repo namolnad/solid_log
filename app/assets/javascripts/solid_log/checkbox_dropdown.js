@@ -1,5 +1,7 @@
 // Checkbox Dropdown functionality for multi-select filters
 (function() {
+  let globalListenersAdded = false;
+
   function closeDropdown(dropdown) {
     const toggle = dropdown.querySelector('[data-action*="toggle"]');
     const menu = dropdown.querySelector('[data-checkbox-dropdown-target="menu"]');
@@ -25,7 +27,7 @@
       const badge = dropdown.querySelector('.badge-small');
       const closeBtn = dropdown.querySelector('.popover-close');
       const doneBtn = dropdown.querySelector('.popover-footer button');
-      const dropdownLabel = toggle.querySelector('.dropdown-label');
+      const dropdownLabel = toggle?.querySelector('.dropdown-label');
 
       if (!toggle || !menu) return;
 
@@ -118,35 +120,42 @@
         checkbox.addEventListener('change', updateCountAndPreview);
       });
 
-      // Initialize count and preview
-      updateCountAndPreview();
-    });
-
-    // Close dropdowns when clicking outside or pressing escape
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('[data-controller="checkbox-dropdown"]')) {
-        document.querySelectorAll('[data-controller="checkbox-dropdown"]').forEach(dropdown => {
-          closeDropdown(dropdown);
-        });
-      }
-    });
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        document.querySelectorAll('[data-controller="checkbox-dropdown"]').forEach(dropdown => {
-          closeDropdown(dropdown);
-        });
-      }
-    });
-
-    // Close dropdowns when filter form content scrolls
-    const filterFormContent = document.querySelector('.filter-form-content');
-    if (filterFormContent) {
-      filterFormContent.addEventListener('scroll', function() {
-        document.querySelectorAll('[data-controller="checkbox-dropdown"]').forEach(dropdown => {
-          closeDropdown(dropdown);
-        });
+      // Initialize count and preview on next frame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        updateCountAndPreview();
       });
+    });
+
+    // Add global event listeners only once
+    if (!globalListenersAdded) {
+      globalListenersAdded = true;
+
+      // Close dropdowns when clicking outside or pressing escape
+      document.addEventListener('click', function(e) {
+        if (!e.target.closest('[data-controller="checkbox-dropdown"]')) {
+          document.querySelectorAll('[data-controller="checkbox-dropdown"]').forEach(dropdown => {
+            closeDropdown(dropdown);
+          });
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('[data-controller="checkbox-dropdown"]').forEach(dropdown => {
+            closeDropdown(dropdown);
+          });
+        }
+      });
+
+      // Close dropdowns when filter form content scrolls
+      const filterFormContent = document.querySelector('.filter-form-content');
+      if (filterFormContent) {
+        filterFormContent.addEventListener('scroll', function() {
+          document.querySelectorAll('[data-controller="checkbox-dropdown"]').forEach(dropdown => {
+            closeDropdown(dropdown);
+          });
+        });
+      }
     }
   }
 
