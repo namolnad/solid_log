@@ -10,7 +10,13 @@
   }
 
   function initializeCheckboxDropdowns() {
-    document.querySelectorAll('[data-controller="checkbox-dropdown"]').forEach(dropdown => {
+    const dropdowns = document.querySelectorAll('[data-controller="checkbox-dropdown"]');
+
+    dropdowns.forEach(dropdown => {
+      // Skip if already initialized
+      if (dropdown.dataset.initialized === 'true') return;
+      dropdown.dataset.initialized = 'true';
+
       const toggle = dropdown.querySelector('[data-action*="toggle"]');
       const menu = dropdown.querySelector('[data-checkbox-dropdown-target="menu"]');
       const search = dropdown.querySelector('[data-checkbox-dropdown-target="search"]');

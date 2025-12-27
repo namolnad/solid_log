@@ -372,36 +372,37 @@ button:disabled {
 }
 
 .streams-sidebar {
-  height: 100%; /* Fill the container height */
   background: white;
   border: 1px solid var(--color-gray-200);
   border-radius: 8px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-height: 0;
 }
 
 .streams-main {
   padding: 0;
   display: flex;
   flex-direction: column;
-  height: 100%; /* Fill the container height */
-  overflow-y: auto; /* Allow vertical scrolling */
+  gap: var(--spacing-md);
+  min-height: 0;
 }
 
 /* Stream Footer - Inline in Terminal View */
 .stream-footer-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
   padding: var(--spacing-md);
   background: white;
   border: 1px solid var(--color-gray-200);
   border-radius: 8px;
-  margin-top: 10px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+#timeline-container {
+  flex: 1;
+  min-width: 0;
 }
 
 .stream-footer-controls {
@@ -417,15 +418,15 @@ button:disabled {
 .filter-form {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .filter-form form {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .filter-form-content {
@@ -633,6 +634,8 @@ button:disabled {
 
 /* Log Stream */
 .log-stream {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0;

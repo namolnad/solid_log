@@ -1,13 +1,15 @@
-<%= render "timeline" %>
+<div class="stream-footer-inline">
+  <%= render "timeline" %>
 
-<div class="stream-footer-controls">
-  <button type="button" id="jump-to-live" class="btn btn-secondary btn-small">
-    ↓ Jump to Live
-  </button>
-
-  <% if SolidLog.configuration.live_tail_mode != :disabled %>
-    <button type="button" id="live-tail-toggle" class="btn btn-secondary btn-small" data-live-tail-mode="<%= SolidLog.configuration.live_tail_mode %>">
-      ▶ Live Tail
+  <div class="stream-footer-controls">
+    <button type="button" id="jump-to-live" class="btn btn-secondary btn-small">
+      ↓ Jump to Live
     </button>
-  <% end %>
+
+    <% if SolidLog.configuration.live_tail_mode != :disabled %>
+      <button type="button" id="live-tail-toggle" class="btn btn-secondary btn-small" data-live-tail-mode="<%= SolidLog.configuration.live_tail_mode %>">
+        ▶ Live Tail
+      </button>
+    <% end %>
+  </div>
 </div>
