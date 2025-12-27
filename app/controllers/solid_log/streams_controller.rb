@@ -4,7 +4,12 @@ module SolidLog
       @search_service = SearchService.new(params[:filters] || {})
 
       @entries = SolidLog.without_logging do
-        @search_service.search
+        # If after_id is present, only get entries after that ID (for live tail)
+        if params[:after_id].present?
+          @search_service.search.where("id > ?", params[:after_id]).limit(100)
+        else
+          @search_service.search
+        end
       end
 
       @available_filters = SolidLog.without_logging do
@@ -13,19 +18,35 @@ module SolidLog
 
       @current_filters = current_filters
 
-      # Generate timeline data for visualization
-      @timeline_data = SolidLog.without_logging do
-        generate_timeline_data
+      # Generate timeline data for visualization (skip for live tail updates)
+      @timeline_data = if params[:after_id].present?
+        { buckets: [] }
+      else
+        SolidLog.without_logging do
+          generate_timeline_data
+        end
       end
 
       respond_to do |format|
         format.html
         format.turbo_stream do
-          render turbo_stream: [
-            turbo_stream.replace("log-stream-content", partial: "log_stream_content", locals: { entries: @entries, query: @current_filters[:query] }),
-            turbo_stream.replace("timeline-container", partial: "timeline", locals: { timeline_data: @timeline_data, current_filters: @current_filters }),
-            turbo_stream.append("toast-container", partial: "toast_message", locals: { message: "Jumped to live", type: "success" })
-          ]
+          if params[:after_id].present?
+            # Live tail update - only append new entries
+            if @entries.any?
+              render turbo_stream: [
+                turbo_stream.append("log-stream-content", partial: "log_entries", locals: { entries: @entries, query: @current_filters[:query] })
+              ]
+            else
+              head :no_content
+            end
+          else
+            # Full refresh (Jump to Live)
+            render turbo_stream: [
+              turbo_stream.replace("log-stream-content", partial: "log_stream_content", locals: { entries: @entries, query: @current_filters[:query] }),
+              turbo_stream.replace("timeline-container", partial: "timeline", locals: { timeline_data: @timeline_data, current_filters: @current_filters }),
+              turbo_stream.append("toast-container", partial: "toast_message", locals: { message: "Jumped to live", type: "success" })
+            ]
+          end
         end
       end
     end

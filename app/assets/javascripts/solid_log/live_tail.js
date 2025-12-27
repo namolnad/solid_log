@@ -1,86 +1,156 @@
 // Live Tail functionality for SolidLog streams
+// Supports both WebSocket (ActionCable) and HTTP polling modes
 (function() {
-  let liveTailInterval = null;
-  let isLiveTailActive = false;
+  let liveTailActive = false;
+  let pollingInterval = null;
+  let cableSubscription = null;
+  let lastEntryId = null;
+  let mode = null;
 
   function initializeLiveTail() {
     const toggleButton = document.getElementById('live-tail-toggle');
     if (!toggleButton) return;
 
+    mode = toggleButton.dataset.liveTailMode;
+    if (!mode || mode === 'disabled') return;
+
     toggleButton.addEventListener('click', function(e) {
       e.preventDefault();
       toggleLiveTail();
     });
+
+    // Store last entry ID for tracking
+    updateLastEntryId();
   }
 
   function toggleLiveTail() {
-    isLiveTailActive = !isLiveTailActive;
+    liveTailActive = !liveTailActive;
     const button = document.getElementById('live-tail-toggle');
 
-    if (isLiveTailActive) {
+    if (liveTailActive) {
       startLiveTail();
-      button.textContent = '⏸ Pause Live Tail';
-      button.classList.add('active');
+      button.textContent = '⏸ Pause';
+      button.classList.add('btn-primary');
+      button.classList.remove('btn-secondary');
+
+      // Show toast notification
+      if (window.SolidLogToast) {
+        window.SolidLogToast.show(`Live tail ${mode === 'websocket' ? 'streaming' : 'polling'} started`, 'info');
+      }
     } else {
       stopLiveTail();
       button.textContent = '▶ Live Tail';
-      button.classList.remove('active');
+      button.classList.remove('btn-primary');
+      button.classList.add('btn-secondary');
+
+      if (window.SolidLogToast) {
+        window.SolidLogToast.show('Live tail stopped', 'info');
+      }
     }
   }
 
   function startLiveTail() {
-    // Poll for new entries every 3 seconds
-    liveTailInterval = setInterval(function() {
+    if (mode === 'websocket' && typeof createConsumer !== 'undefined') {
+      startWebSocketTail();
+    } else {
+      // Fallback to polling if websocket unavailable or mode is 'polling'
+      startPollingTail();
+    }
+
+    // Auto-scroll to bottom
+    scrollToBottom();
+  }
+
+  function stopLiveTail() {
+    if (cableSubscription) {
+      cableSubscription.unsubscribe();
+      cableSubscription = null;
+    }
+
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
+    }
+  }
+
+  function startWebSocketTail() {
+    // Get current filter params
+    const filters = getCurrentFilters();
+
+    // Create ActionCable subscription
+    const consumer = createConsumer();
+    cableSubscription = consumer.subscriptions.create(
+      {
+        channel: "SolidLog::LogStreamChannel",
+        filters: filters
+      },
+      {
+        connected() {
+          console.log('Connected to log stream');
+        },
+
+        disconnected() {
+          console.log('Disconnected from log stream');
+          // If still active, fallback to polling
+          if (liveTailActive) {
+            console.log('Falling back to polling mode');
+            startPollingTail();
+          }
+        },
+
+        received(data) {
+          // Received new log entry via websocket
+          if (data.html) {
+            appendEntry(data.html);
+            updateLastEntryId();
+            scrollToBottom();
+          }
+        }
+      }
+    );
+  }
+
+  function startPollingTail() {
+    // Poll every 2 seconds
+    pollingInterval = setInterval(function() {
       fetchNewEntries();
-    }, 3000);
+    }, 2000);
 
     // Initial fetch
     fetchNewEntries();
   }
 
-  function stopLiveTail() {
-    if (liveTailInterval) {
-      clearInterval(liveTailInterval);
-      liveTailInterval = null;
-    }
-  }
-
   function fetchNewEntries() {
-    const logStream = document.querySelector('.log-stream');
-    if (!logStream) return;
+    const streamsPath = document.body.dataset.streamsPath || '/streams';
+    const url = new URL(window.location.origin + streamsPath);
 
-    // Get timestamp of the newest entry currently displayed
-    const entries = logStream.querySelectorAll('.log-row-compact, .log-row');
-    if (entries.length === 0) {
-      window.location.reload();
-      return;
+    // Copy current filters
+    const currentParams = new URLSearchParams(window.location.search);
+    currentParams.forEach((value, key) => {
+      url.searchParams.append(key, value);
+    });
+
+    // Add after_id parameter if we have a last entry
+    if (lastEntryId) {
+      url.searchParams.set('after_id', lastEntryId);
     }
 
-    const lastEntry = entries[entries.length - 1];
-    const timeElement = lastEntry.querySelector('[title]');
-    if (!timeElement) return;
-
-    const newestTimestamp = timeElement.getAttribute('title');
-
-    // Get current filters from URL
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
-
-    // Add parameter to get entries after the newest timestamp
-    params.set('after', newestTimestamp);
-    params.set('limit', '100'); // Get up to 100 new entries
-
-    // Fetch new entries
-    fetch(`${url.pathname}?${params.toString()}`, {
+    // Request turbo stream format
+    fetch(url.toString(), {
       headers: {
-        'Accept': 'application/json',
+        'Accept': 'text/vnd.turbo-stream.html',
         'X-Requested-With': 'XMLHttpRequest'
       }
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.entries && data.entries.length > 0) {
-        appendEntries(data.entries);
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.text();
+    })
+    .then(html => {
+      if (html && html.trim()) {
+        // Turbo will automatically process the stream response
+        Turbo.renderStreamMessage(html);
+        updateLastEntryId();
         scrollToBottom();
       }
     })
@@ -89,12 +159,12 @@
     });
   }
 
-  function appendEntries(entriesHTML) {
-    const logStream = document.querySelector('.log-stream');
+  function appendEntry(html) {
+    const logStream = document.getElementById('log-stream-content');
     if (!logStream) return;
 
     const temp = document.createElement('div');
-    temp.innerHTML = entriesHTML;
+    temp.innerHTML = html;
 
     // Append new entries
     while (temp.firstChild) {
@@ -102,15 +172,45 @@
     }
   }
 
-  function scrollToBottom() {
-    if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
-      window.SolidLogStream.scrollToBottom();
-    } else {
-      const streamsMain = document.querySelector('.streams-main');
-      if (streamsMain) {
-        streamsMain.scrollTop = streamsMain.scrollHeight;
-      }
+  function updateLastEntryId() {
+    const logStream = document.getElementById('log-stream-content');
+    if (!logStream) return;
+
+    const entries = logStream.querySelectorAll('[data-entry-id]');
+    if (entries.length > 0) {
+      const lastEntry = entries[entries.length - 1];
+      lastEntryId = lastEntry.dataset.entryId;
     }
+  }
+
+  function getCurrentFilters() {
+    const filters = {};
+    const params = new URLSearchParams(window.location.search);
+
+    params.forEach((value, key) => {
+      if (key.startsWith('filters[')) {
+        const filterKey = key.match(/filters\[(.*?)\]/)[1];
+        if (!filters[filterKey]) {
+          filters[filterKey] = [];
+        }
+        filters[filterKey].push(value);
+      }
+    });
+
+    return filters;
+  }
+
+  function scrollToBottom() {
+    setTimeout(() => {
+      if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
+        window.SolidLogStream.scrollToBottom();
+      } else {
+        const streamsMain = document.querySelector('.streams-main');
+        if (streamsMain) {
+          streamsMain.scrollTop = streamsMain.scrollHeight;
+        }
+      }
+    }, 50);
   }
 
   // Initialize on page load
@@ -119,6 +219,9 @@
   } else {
     initializeLiveTail();
   }
+
+  // Re-initialize on turbo navigation
+  document.addEventListener('turbo:load', initializeLiveTail);
 
   // Clean up on page unload
   window.addEventListener('beforeunload', stopLiveTail);

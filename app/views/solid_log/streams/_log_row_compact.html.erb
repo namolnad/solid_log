@@ -1,4 +1,4 @@
-<div class="log-row-compact-wrapper">
+<div class="log-row-compact-wrapper" data-entry-id="<%= entry.id %>">
   <span class="log-row-timestamp"><%= entry.timestamp.strftime("%Y-%m-%d %H:%M:%S %z") %></span>
 
   <%= link_to entry_path(entry), class: "log-row-compact-message" do %>

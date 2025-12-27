@@ -58,8 +58,16 @@ module SolidLog
 
         # Bulk insert parsed entries
         if entries_to_insert.any?
+          raw_ids = entries_to_insert.map { |e| e[:raw_id] }
+
           Entry.insert_all(entries_to_insert)
           Rails.logger.info "SolidLog::ParserJob: Inserted #{entries_to_insert.size} entries"
+
+          # Broadcast new entries for live tail (if enabled)
+          if SolidLog.configuration.live_tail_mode == :websocket
+            new_entry_ids = Entry.where(raw_id: raw_ids).pluck(:id)
+            LiveTailBroadcaster.broadcast_entries(new_entry_ids)
+          end
         end
 
         # Update field registry
