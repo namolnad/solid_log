@@ -15,6 +15,7 @@
   <%= javascript_include_tag "solid_log/timeline_histogram", "data-turbo-track": "reload", defer: true %>
   <%= javascript_include_tag "solid_log/log_filters", "data-turbo-track": "reload", defer: true %>
   <%= javascript_include_tag "solid_log/filter_state", "data-turbo-track": "reload", defer: true %>
+  <%= javascript_include_tag "solid_log/toast", "data-turbo-track": "reload", defer: true %>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body data-streams-path="<%= streams_path %>">
@@ -35,6 +36,8 @@
   <main class="main-content">
     <%= yield %>
   </main>
+
+  <%= render "solid_log/shared/toast" %>
 
   <footer class="footer">
     <% if content_for?(:stream_footer) %>

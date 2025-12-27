@@ -17,6 +17,17 @@ module SolidLog
       @timeline_data = SolidLog.without_logging do
         generate_timeline_data
       end
+
+      respond_to do |format|
+        format.html
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.replace("log-stream-content", partial: "log_stream_content", locals: { entries: @entries, query: @current_filters[:query] }),
+            turbo_stream.replace("timeline-container", partial: "timeline", locals: { timeline_data: @timeline_data, current_filters: @current_filters }),
+            turbo_stream.append("toast-container", partial: "toast_message", locals: { message: "Jumped to live", type: "success" })
+          ]
+        end
+      end
     end
 
     private

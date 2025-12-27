@@ -1,31 +1,36 @@
 <%= render "timeline" %>
 
 <div class="stream-footer-controls">
-  <button type="button" id="jump-to-live" class="btn btn-secondary btn-small">
-    ↓ Jump to Live
-  </button>
+  <%= link_to "↓ Jump to Live",
+              streams_path(params.permit(:filters).to_h),
+              class: "btn btn-secondary btn-small",
+              data: {
+                turbo_stream: true,
+                turbo_action: "replace"
+              },
+              id: "jump-to-live" %>
 
-  <button type="button" id="live-tail-toggle" class="btn btn-secondary btn-small">
-    ▶ Live Tail
-  </button>
+  <% if SolidLog.configuration.live_tail_mode != :disabled %>
+    <button type="button" id="live-tail-toggle" class="btn btn-secondary btn-small" data-live-tail-mode="<%= SolidLog.configuration.live_tail_mode %>">
+      ▶ Live Tail
+    </button>
+  <% end %>
 </div>
 
 <script>
-  // Jump to Live button functionality - refresh and scroll to bottom
-  document.addEventListener('DOMContentLoaded', function() {
-    const jumpButton = document.getElementById('jump-to-live');
-    if (jumpButton) {
-      jumpButton.addEventListener('click', function() {
-        // Reload the page to get latest logs
-        window.location.reload();
-      });
+  // Scroll to bottom after Turbo Stream updates
+  document.addEventListener('turbo:frame-render', function() {
+    if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
+      setTimeout(() => window.SolidLogStream.scrollToBottom(), 100);
     }
   });
 
-  // After page loads, scroll to bottom
-  document.addEventListener('turbo:load', function() {
-    if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
-      window.SolidLogStream.scrollToBottom();
-    }
+  document.addEventListener('turbo:before-stream-render', function() {
+    // Will scroll after stream updates complete
+    setTimeout(() => {
+      if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
+        window.SolidLogStream.scrollToBottom();
+      }
+    }, 100);
   });
 </script>

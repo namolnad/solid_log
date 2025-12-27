@@ -11,7 +11,8 @@ module SolidLog
                   :field_promotion_threshold,
                   :client_token,
                   :ingestion_url,
-                  :stream_view_style
+                  :stream_view_style,
+                  :live_tail_mode
 
     def initialize
       @retention_days = 30
@@ -26,6 +27,7 @@ module SolidLog
       @client_token = nil
       @ingestion_url = nil
       @stream_view_style = :compact # :compact or :expanded
+      @live_tail_mode = :disabled # :websocket, :polling, or :disabled
     end
   end
 end

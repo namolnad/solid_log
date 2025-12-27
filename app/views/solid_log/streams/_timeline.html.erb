@@ -1,11 +1,14 @@
-<% if @timeline_data[:buckets].any? %>
-  <div class="timeline-histogram" data-controller="timeline-histogram">
+<div id="timeline-container">
+  <% if defined?(timeline_data) ? timeline_data[:buckets].any? : @timeline_data[:buckets].any? %>
+    <% timeline_data ||= @timeline_data %>
+    <% current_filters ||= @current_filters %>
+    <div class="timeline-histogram" data-controller="timeline-histogram">
     <div class="timeline-header-row">
       <h3>Log Timeline</h3>
       <div class="timeline-info">
         <span class="timeline-range">
-          <%= @timeline_data[:start_time].strftime("%Y-%m-%d %H:%M") %> -
-          <%= @timeline_data[:end_time].strftime("%Y-%m-%d %H:%M") %>
+          <%= timeline_data[:start_time].strftime("%Y-%m-%d %H:%M") %> -
+          <%= timeline_data[:end_time].strftime("%Y-%m-%d %H:%M") %>
         </span>
         <button type="button" class="btn-link-small" data-action="click->timeline-histogram#clearSelection">
           Clear Time Filter
@@ -14,11 +17,11 @@
     </div>
 
     <div class="timeline-chart" data-timeline-histogram-target="chart">
-      <% max_count = @timeline_data[:buckets].map { |b| b[:count] }.max %>
+      <% max_count = timeline_data[:buckets].map { |b| b[:count] }.max %>
       <% max_count = 1 if max_count == 0 %> <%# Avoid division by zero %>
 
       <div class="timeline-bars" data-timeline-histogram-target="barsContainer">
-        <% @timeline_data[:buckets].each_with_index do |bucket, index| %>
+        <% timeline_data[:buckets].each_with_index do |bucket, index| %>
           <div class="timeline-bar-wrapper"
                data-timeline-histogram-target="bar"
                data-index="<%= index %>"
@@ -47,7 +50,7 @@
     </div>
 
     <%= form_with url: streams_path, method: :get, data: { timeline_histogram_target: "form" } do |f| %>
-      <% @current_filters.each do |key, value| %>
+      <% current_filters.each do |key, value| %>
         <% next if [:start_time, :end_time].include?(key) %>
         <% if value.is_a?(Array) %>
           <% value.each do |v| %>
@@ -60,5 +63,6 @@
       <%= hidden_field_tag "filters[start_time]", "", data: { timeline_histogram_target: "startTimeField" } %>
       <%= hidden_field_tag "filters[end_time]", "", data: { timeline_histogram_target: "endTimeField" } %>
     <% end %>
-  </div>
-<% end %>
+    </div>
+  <% end %>
+</div>

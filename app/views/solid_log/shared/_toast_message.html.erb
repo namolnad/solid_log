@@ -1,0 +1,24 @@
+<%
+  type ||= 'info'
+  icons = {
+    'success' => '✓',
+    'info' => 'ℹ',
+    'warning' => '⚠',
+    'error' => '✕'
+  }
+%>
+<div class="toast toast-<%= type %>" data-controller="toast" data-action="animationend->toast#remove">
+  <span class="toast-icon"><%= icons[type] || icons['info'] %></span>
+  <span class="toast-message"><%= message %></span>
+  <button type="button" class="toast-close" data-action="click->toast#dismiss" aria-label="Close">×</button>
+</div>
+
+<script>
+  // Auto-dismiss after 3 seconds
+  setTimeout(function() {
+    const toast = document.querySelector('[data-controller="toast"]:last-child');
+    if (toast) {
+      toast.classList.add('toast-dismissing');
+    }
+  }, 3000);
+</script>
