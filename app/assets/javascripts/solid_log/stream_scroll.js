@@ -19,7 +19,12 @@
     }
 
     // Auto-scroll to bottom on initial load (to show newest logs)
-    scrollToBottom(logStream);
+    // Use requestAnimationFrame to ensure DOM is fully rendered and laid out
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToBottom(logStream);
+      });
+    });
 
     // Infinite scroll: load more when scrolling up
     const streamsMain = document.querySelector('.streams-main');
@@ -39,7 +44,13 @@
     isScrollingProgrammatically = true;
     const parent = container.closest('.streams-main');
     if (parent) {
+      // Try multiple approaches to ensure scroll works
       parent.scrollTop = parent.scrollHeight;
+      // Also try scrolling the last element into view
+      const lastElement = container.lastElementChild;
+      if (lastElement) {
+        lastElement.scrollIntoView({ behavior: 'instant', block: 'end' });
+      }
     }
     setTimeout(() => {
       isScrollingProgrammatically = false;

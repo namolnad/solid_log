@@ -387,7 +387,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   height: 100%; /* Fill the container height */
-  overflow: hidden;
+  overflow-y: auto; /* Allow vertical scrolling */
 }
 
 /* Stream Footer - Inline in Terminal View */

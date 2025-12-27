@@ -3,6 +3,7 @@ PATH
   specs:
     solid_log (0.1.0)
       bcrypt (~> 3.1)
+      importmap-rails
       propshaft (>= 1.0)
       rails (>= 8.0.2)
       sqlite3 (>= 2.1)
@@ -99,6 +100,10 @@ GEM
       activesupport (>= 6.1)
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
+    importmap-rails (2.2.2)
+      actionpack (>= 6.0.0)
+      activesupport (>= 6.0.0)
+      railties (>= 6.0.0)
     io-console (0.8.0)
     irb (1.15.1)
       pp (>= 0.6.0)

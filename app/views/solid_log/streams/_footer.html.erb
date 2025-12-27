@@ -1,14 +1,9 @@
 <%= render "timeline" %>
 
 <div class="stream-footer-controls">
-  <%= link_to "↓ Jump to Live",
-              streams_path(params.permit(:filters).to_h),
-              class: "btn btn-secondary btn-small",
-              data: {
-                turbo_stream: true,
-                turbo_action: "replace"
-              },
-              id: "jump-to-live" %>
+  <button type="button" id="jump-to-live" class="btn btn-secondary btn-small">
+    ↓ Jump to Live
+  </button>
 
   <% if SolidLog.configuration.live_tail_mode != :disabled %>
     <button type="button" id="live-tail-toggle" class="btn btn-secondary btn-small" data-live-tail-mode="<%= SolidLog.configuration.live_tail_mode %>">
@@ -16,21 +11,3 @@
     </button>
   <% end %>
 </div>
-
-<script>
-  // Scroll to bottom after Turbo Stream updates
-  document.addEventListener('turbo:frame-render', function() {
-    if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
-      setTimeout(() => window.SolidLogStream.scrollToBottom(), 100);
-    }
-  });
-
-  document.addEventListener('turbo:before-stream-render', function() {
-    // Will scroll after stream updates complete
-    setTimeout(() => {
-      if (window.SolidLogStream && window.SolidLogStream.scrollToBottom) {
-        window.SolidLogStream.scrollToBottom();
-      }
-    }, 100);
-  });
-</script>

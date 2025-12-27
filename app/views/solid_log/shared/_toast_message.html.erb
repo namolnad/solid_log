@@ -6,19 +6,25 @@
     'warning' => '⚠',
     'error' => '✕'
   }
+  toast_id = "toast-#{SecureRandom.hex(4)}"
 %>
-<div class="toast toast-<%= type %>" data-controller="toast" data-action="animationend->toast#remove">
+<div class="toast toast-<%= type %>" id="<%= toast_id %>">
   <span class="toast-icon"><%= icons[type] || icons['info'] %></span>
   <span class="toast-message"><%= message %></span>
-  <button type="button" class="toast-close" data-action="click->toast#dismiss" aria-label="Close">×</button>
+  <button type="button" class="toast-close" onclick="this.closest('.toast').remove()" aria-label="Close">×</button>
 </div>
-
 <script>
-  // Auto-dismiss after 3 seconds
-  setTimeout(function() {
-    const toast = document.querySelector('[data-controller="toast"]:last-child');
+  (function() {
+    const toast = document.getElementById('<%= toast_id %>');
     if (toast) {
-      toast.classList.add('toast-dismissing');
+      // Auto-dismiss after 3 seconds
+      setTimeout(function() {
+        toast.classList.add('toast-dismissing');
+        // Remove after animation completes
+        setTimeout(function() {
+          toast.remove();
+        }, 300);
+      }, 3000);
     }
-  }, 3000);
+  })();
 </script>

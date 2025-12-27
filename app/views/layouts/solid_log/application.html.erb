@@ -9,8 +9,10 @@
 
   <%= stylesheet_link_tag "solid_log/application", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "solid_log/components", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
   <%= javascript_include_tag "solid_log/stream_scroll", "data-turbo-track": "reload", defer: true %>
   <%= javascript_include_tag "solid_log/live_tail", "data-turbo-track": "reload", defer: true %>
+  <%= javascript_include_tag "solid_log/jump_to_live", "data-turbo-track": "reload", defer: true %>
   <%= javascript_include_tag "solid_log/checkbox_dropdown", "data-turbo-track": "reload", defer: true %>
   <%= javascript_include_tag "solid_log/timeline_histogram", "data-turbo-track": "reload", defer: true %>
   <%= javascript_include_tag "solid_log/log_filters", "data-turbo-track": "reload", defer: true %>
