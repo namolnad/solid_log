@@ -1,7 +1,17 @@
 version: 2
 updates:
 - package-ecosystem: bundler
-  directory: "/"
+  directory: "/solid_log-core"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+- package-ecosystem: bundler
+  directory: "/solid_log-service"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+- package-ecosystem: bundler
+  directory: "/solid_log-ui"
   schedule:
     interval: daily
   open-pull-requests-limit: 10
