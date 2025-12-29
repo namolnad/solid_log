@@ -28,4 +28,11 @@ Gem::Specification.new do |spec|
   # Development dependencies
   spec.add_development_dependency "sqlite3", ">= 2.1"
   spec.add_development_dependency "minitest", ">= 5.0"
+  spec.add_development_dependency "combustion", "~> 1.4"
+  spec.add_development_dependency "rake", "~> 13.0"
+  spec.add_development_dependency "debug"
+  spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "rubocop-rails-omakase"
+  spec.add_development_dependency "rack-cors"
+  spec.add_development_dependency "solid_cable"
 end

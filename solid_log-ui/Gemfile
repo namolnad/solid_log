@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gemspec
+# Use local solid_log-core gem for development
+gem "solid_log-core", path: "../solid_log-core"
 
-gem "rake", "~> 13.0"
-gem "debug"
+gemspec

@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 
 jobs:
-  lint:
+  lint-core:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,7 +17,93 @@ jobs:
         with:
           ruby-version: 3.3.6
           bundler-cache: true
+          working-directory: solid_log-core
 
       - name: Lint code for consistent style
-        run: bin/rubocop -f github
+        run: bundle exec rubocop -f github
+        working-directory: solid_log-core
 
+  lint-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          working-directory: solid_log-service
+
+      - name: Lint code for consistent style
+        run: bundle exec rubocop -f github
+        working-directory: solid_log-service
+
+  lint-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          working-directory: solid_log-ui
+
+      - name: Lint code for consistent style
+        run: bundle exec rubocop -f github
+        working-directory: solid_log-ui
+
+  test-core:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          working-directory: solid_log-core
+
+      - name: Run tests
+        run: bundle exec rake test
+        working-directory: solid_log-core
+
+  test-service:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          working-directory: solid_log-service
+
+      - name: Run tests
+        run: bundle exec rake test
+        working-directory: solid_log-service
+
+  test-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.6
+          bundler-cache: true
+          working-directory: solid_log-ui
+
+      - name: Run tests
+        run: bundle exec rake test
+        working-directory: solid_log-ui
