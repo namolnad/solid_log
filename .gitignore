@@ -1,15 +1,56 @@
+# Bundler
 /.bundle/
+/vendor/bundle
+
+# Documentation
 /doc/
-/log/*.log
+
+# Package builds
 /pkg/
+*.gem
+
+# Temporary files
 /tmp/
-/storage
-/test/dummy/log/
-/test/dummy/pkg/
-/test/dummy/tmp/
-/test/dummy/storage
-/test/dummy/db/log_schema.rb
-/test/dummy/db/log_structure.sql
-/test/dummy/db/log_migrate/
-/test/dummy/config/initializers/solid_log.rb
+/storage/
+
+# Logs
+*.log
+/log/*.log
+
+# Database files
+*.sqlite3
+*.sqlite3-*
+
+# Demo app artifacts
+/demo/log/
+/demo/tmp/
+/demo/storage/
+
+# Each gem's tmp directories (for benchmarks, etc)
+/solid_log-core/tmp/
+/solid_log-service/tmp/
+/solid_log-ui/tmp/
+
+# Each gem's test artifacts (internal test apps)
+/solid_log-core/test/internal/log/
+/solid_log-core/test/internal/tmp/
+/solid_log-core/test/internal/db/*.sqlite3
+
+/solid_log-service/test/internal/log/
+/solid_log-service/test/internal/tmp/
+/solid_log-service/test/internal/db/*.sqlite3
+
+/solid_log-ui/test/internal/log/
+/solid_log-ui/test/internal/tmp/
+/solid_log-ui/test/internal/db/*.sqlite3
+
+# Keep .keep files
 !/**/.keep
+
+# IDE
+/.idea/
+/.vscode/
+/.ruby-lsp/
+
+# OS
+.DS_Store

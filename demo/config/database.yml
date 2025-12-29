@@ -1,0 +1,35 @@
+# SQLite3 configuration for test app with separate log database
+default: &default
+  adapter: sqlite3
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+
+development:
+  primary:
+    <<: *default
+    database: storage/development.sqlite3
+  log:
+    <<: *default
+    database: storage/development_log.sqlite3
+    migrations_paths: db/log_migrate
+    schema_format: :sql
+
+test:
+  primary:
+    <<: *default
+    database: storage/test.sqlite3
+  log:
+    <<: *default
+    database: storage/test_log.sqlite3
+    migrations_paths: db/log_migrate
+    schema_format: :sql
+
+production:
+  primary:
+    <<: *default
+    database: storage/production.sqlite3
+  log:
+    <<: *default
+    database: storage/production_log.sqlite3
+    migrations_paths: db/log_migrate
+    schema_format: :sql

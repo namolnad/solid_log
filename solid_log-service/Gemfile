@@ -1,0 +1,20 @@
+source "https://rubygems.org"
+
+# Use local solid_log-core gem for development
+gem "solid_log-core", path: "../solid_log-core"
+
+gemspec
+
+gem "rake", "~> 13.0"
+gem "debug"
+
+# Testing
+gem "combustion", "~> 1.4"
+gem "minitest"
+gem "sqlite3"
+
+# Optional: CORS support
+gem "rack-cors"
+
+# Action Cable adapter
+gem "solid_cable"

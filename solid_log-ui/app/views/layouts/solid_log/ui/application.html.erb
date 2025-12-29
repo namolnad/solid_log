@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>SolidLog - Log Management</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <%= yield :head %>
+
+  <%= stylesheet_link_tag "solid_log/application", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "solid_log/components", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+  <%= javascript_include_tag "solid_log/stream_scroll", defer: true %>
+  <%= javascript_include_tag "solid_log/live_tail", defer: true %>
+  <%= javascript_include_tag "solid_log/jump_to_live", defer: true %>
+  <%= javascript_include_tag "solid_log/checkbox_dropdown", defer: true %>
+  <%= javascript_include_tag "solid_log/timeline_histogram", defer: true %>
+  <%= javascript_include_tag "solid_log/log_filters", defer: true %>
+  <%= javascript_include_tag "solid_log/filter_state", defer: true %>
+  <%= javascript_include_tag "solid_log/toast", defer: true %>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body data-streams-path="<%= streams_path %>">
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <%= link_to root_path, class: "brand-link" do %>
+        <strong>SolidLog</strong>
+      <% end %>
+    </div>
+    <div class="nav-links">
+      <%= link_to "Dashboard", dashboard_path, class: nav_link_class(dashboard_path) %>
+      <%= link_to "Streams", streams_path, class: nav_link_class(streams_path) %>
+      <%= link_to "Fields", fields_path, class: nav_link_class(fields_path) %>
+      <%= link_to "Tokens", tokens_path, class: nav_link_class(tokens_path) %>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <%= yield %>
+  </main>
+
+  <%= render "solid_log/ui/shared/toast" %>
+
+  <footer class="footer">
+    <% if content_for?(:stream_footer) %>
+      <%= yield :stream_footer %>
+    <% end %>
+    <div class="footer-content">
+      <span>SolidLog <%= SolidLog::VERSION rescue "1.0.0" %></span>
+    </div>
+  </footer>
+</body>
+</html>

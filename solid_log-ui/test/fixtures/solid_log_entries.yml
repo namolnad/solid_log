@@ -1,0 +1,51 @@
+error_entry:
+  id: 1
+  level: error
+  message: "Database connection failed"
+  timestamp: <%= 1.hour.ago.iso8601 %>
+  created_at: <%= 1.hour.ago.iso8601 %>
+  app: "test_app"
+  env: "development"
+  request_id: "req-123"
+  controller: "UsersController"
+  action: "index"
+  path: "/users"
+  method: "GET"
+  status_code: 500
+  duration: 250.5
+
+info_entry:
+  id: 2
+  level: info
+  message: "Request completed successfully"
+  timestamp: <%= 30.minutes.ago.iso8601 %>
+  created_at: <%= 30.minutes.ago.iso8601 %>
+  app: "test_app"
+  env: "development"
+  request_id: "req-456"
+  controller: "UsersController"
+  action: "show"
+  path: "/users/1"
+  method: "GET"
+  status_code: 200
+  duration: 45.2
+
+debug_entry:
+  id: 3
+  level: debug
+  message: "SQL query executed"
+  timestamp: <%= 15.minutes.ago.iso8601 %>
+  created_at: <%= 15.minutes.ago.iso8601 %>
+  app: "test_app"
+  env: "development"
+
+warn_entry:
+  id: 4
+  level: warn
+  message: "Deprecated API usage detected"
+  timestamp: <%= 5.minutes.ago.iso8601 %>
+  created_at: <%= 5.minutes.ago.iso8601 %>
+  app: "test_app"
+  env: "production"
+  path: "/api/v1/users"
+  method: "POST"

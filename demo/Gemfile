@@ -1,0 +1,37 @@
+source "https://rubygems.org"
+
+ruby "3.3.6"
+
+# Rails
+gem "rails", "~> 8.0.0"
+
+# Database
+gem "sqlite3", ">= 2.1"
+
+# Web server
+gem "puma", ">= 5.0"
+
+# Action Cable adapter
+gem "solid_cable"
+
+# Asset pipeline
+gem "propshaft"
+gem "importmap-rails"
+gem "turbo-rails"
+gem "stimulus-rails"
+
+# SolidLog gems - use local paths
+gem "solid_log-core", path: "../../../solid_log-core"
+gem "solid_log-service", path: "../../../solid_log-service"
+gem "solid_log-ui", path: "../../"
+
+# Development and test
+group :development, :test do
+  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "brakeman", require: false
+  gem "rubocop-rails-omakase", require: false
+end
+
+group :development do
+  gem "web-console"
+end

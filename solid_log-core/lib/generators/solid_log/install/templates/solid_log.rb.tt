@@ -1,0 +1,133 @@
+# SolidLog Configuration
+SolidLog::Core.configure do |config|
+  # Retention policies
+  config.retention_days = 30              # Keep regular logs for 30 days
+  config.error_retention_days = 90        # Keep errors for 90 days
+
+  # Parsing & ingestion
+  config.max_batch_size = 100             # Logs per batch insert
+  config.parser_batch_size = 200          # Parser job batch size
+
+  # Performance
+  config.facet_cache_ttl = 5.minutes      # Cache filter options for 5 min
+end
+
+# Enable WAL mode for SQLite (HIGHLY RECOMMENDED)
+# Provides 3.4x faster eager flush performance (16,882 vs 4,923 logs/sec)
+# Skip this if using PostgreSQL or MySQL
+if defined?(ActiveRecord::Base)
+  begin
+    ActiveRecord::Base.connected_to(role: :log) do
+      adapter = ActiveRecord::Base.connection_db_config.adapter
+      if adapter == "sqlite3"
+        ActiveRecord::Base.connection.execute("PRAGMA journal_mode=WAL")
+        ActiveRecord::Base.connection.execute("PRAGMA synchronous=NORMAL")
+        Rails.logger.info "SolidLog: WAL mode enabled for SQLite"
+      end
+    end
+  rescue => e
+    Rails.logger.warn "SolidLog: Could not enable WAL mode: #{e.message}"
+  end
+end
+
+# ============================================================================
+# DirectLogger Configuration (RECOMMENDED for parent app logging)
+# ============================================================================
+#
+# DirectLogger writes logs directly to the database for maximum performance.
+# It's 9x faster than individual inserts and 67x faster than HTTP logging.
+#
+# Performance with WAL mode:
+#   - With crash safety: 16,882 logs/sec
+#   - Without crash safety: 56,660 logs/sec
+#
+# See: solid_log-core/BENCHMARK_RESULTS.md for detailed benchmarks
+
+Rails.application.configure do
+  # Option 1: Use DirectLogger with Lograge (recommended)
+  #
+  # config.lograge.enabled = true
+  # config.lograge.formatter = Lograge::Formatters::Json.new
+  #
+  # config.lograge.logger = ActiveSupport::Logger.new(
+  #   SolidLog::DirectLogger.new(
+  #     batch_size: 100,                      # Flush after 100 logs
+  #     flush_interval: 5,                    # Or after 5 seconds
+  #     eager_flush_levels: [:error, :fatal]  # Flush errors immediately (crash safety)
+  #   )
+  # )
+
+  # Option 2: Use DirectLogger with standard Rails logger
+  #
+  # config.logger = ActiveSupport::Logger.new(
+  #   SolidLog::DirectLogger.new
+  # )
+
+  # Option 3: Use HTTP Logger (for external services)
+  #
+  # For services without direct database access, use HTTP:
+  #
+  # config.lograge.enabled = true
+  # config.lograge.formatter = Lograge::Formatters::Json.new
+  # config.lograge.logger = ActiveSupport::Logger.new(
+  #   SolidLog::HttpLogger.new(
+  #     url: ENV['SOLIDLOG_URL'] || "http://localhost:3000/admin/logs/api/v1/ingest",
+  #     token: ENV['SOLIDLOG_TOKEN']
+  #   )
+  # )
+end
+
+# ============================================================================
+# DirectLogger Crash Safety
+# ============================================================================
+#
+# By default, DirectLogger flushes error/fatal logs IMMEDIATELY to prevent
+# losing the logs that explain WHY your app crashed.
+#
+# How it works:
+#   - info/debug/warn logs: Buffered (fast)
+#   - error/fatal logs: Flushed immediately (safe)
+#   - When error occurs: All buffered logs + error log flushed together
+#
+# Example:
+#   10:00:00 - info: Request started (buffered)
+#   10:00:01 - info: Processing params (buffered)
+#   10:00:02 - ERROR: Database connection lost (FLUSHES ALL 3 LOGS IMMEDIATELY)
+#   [App crashes - but logs are safe!]
+#
+# Configuration options:
+#
+# # Maximum safety (flush everything)
+# SolidLog::DirectLogger.new(
+#   batch_size: 10,
+#   flush_interval: 1,
+#   eager_flush_levels: [:debug, :info, :warn, :error, :fatal]
+# )
+#
+# # Maximum performance (risky - may lose crash logs!)
+# SolidLog::DirectLogger.new(
+#   batch_size: 500,
+#   flush_interval: 30,
+#   eager_flush_levels: []  # Disable eager flush
+# )
+#
+# # Recommended balance (default)
+# SolidLog::DirectLogger.new(
+#   batch_size: 100,
+#   flush_interval: 5,
+#   eager_flush_levels: [:error, :fatal]  # Default
+# )
+
+# ============================================================================
+# Token Configuration (Optional)
+# ============================================================================
+#
+# DirectLogger's token_id is optional. Use it only for audit trail tracking.
+#
+# Priority order:
+#   1. Explicit token_id parameter
+#   2. ENV["SOLIDLOG_TOKEN_ID"]
+#   3. nil (default - no token required)
+#
+# Example:
+#   ENV["SOLIDLOG_TOKEN_ID"] = "123"  # Optional

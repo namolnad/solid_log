@@ -1,0 +1,5 @@
+<%# Entries come from query in DESC order (newest first) %>
+<%# Reverse to ASC order (oldest first) for correct DOM order %>
+<% entries.reverse.each do |entry| %>
+  <%= render "log_row", entry: entry, query: defined?(query) ? query : nil %>
+<% end %>

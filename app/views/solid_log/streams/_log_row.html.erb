@@ -1,5 +1,0 @@
-<% if SolidLog.configuration.stream_view_style == :expanded %>
-  <%= render "log_row_expanded", entry: entry, query: defined?(query) ? query : nil %>
-<% else %>
-  <%= render "log_row_compact", entry: entry, query: defined?(query) ? query : nil %>
-<% end %>

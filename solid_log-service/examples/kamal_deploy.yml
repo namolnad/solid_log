@@ -1,0 +1,82 @@
+# Example: Kamal Deployment with Separate SolidLog Service
+# Place this in: config/deploy.yml
+
+service: myapp
+
+image: myapp/myapp
+
+servers:
+  web:
+    hosts:
+      - 192.168.1.1
+    labels:
+      traefik.http.routers.myapp.rule: Host(`myapp.com`)
+    options:
+      network: "private"
+
+  # SolidLog Service as separate Kamal server
+  solidlog:
+    hosts:
+      - 192.168.1.1  # Same host, different container
+    cmd: bin/solid_log_service
+    labels:
+      traefik.http.routers.solidlog.rule: Host(`logs.myapp.com`) || PathPrefix(`/logs`)
+    options:
+      network: "private"
+
+registry:
+  username: your-username
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    RAILS_ENV: production
+  secret:
+    - RAILS_MASTER_KEY
+    - SOLIDLOG_TOKEN
+
+# Shared volume for SQLite database
+volumes:
+  - "solidlog-data:/app/storage"
+
+# Accessories (optional - if you want a separate database)
+accessories:
+  # SolidLog PostgreSQL (optional)
+  # solidlog-db:
+  #   image: postgres:16
+  #   host: 192.168.1.1
+  #   env:
+  #     clear:
+  #       POSTGRES_DB: solidlog_production
+  #     secret:
+  #       - POSTGRES_PASSWORD
+  #   directories:
+  #     - data:/var/lib/postgresql/data
+
+# Main app configuration
+# config/initializers/solid_log_client.rb:
+#
+# SolidLog::Core.configure_client do |config|
+#   config.service_url = 'http://myapp-solidlog:3001'  # Internal Docker network
+#   config.token = ENV['SOLIDLOG_TOKEN']
+#   config.app_name = 'web'
+#   config.environment = Rails.env
+# end
+#
+# SolidLog::Core::Client.start
+
+# Service configuration
+# config/solid_log_service.rb:
+#
+# SolidLog::Service.configure do |config|
+#   config.database_url = 'sqlite3:///app/storage/production_log.sqlite'
+#   config.job_mode = :scheduler
+#   config.parser_interval = 10
+# end
+
+# Deploy:
+#   kamal deploy
+#
+# Deploy only service:
+#   kamal deploy --roles=solidlog

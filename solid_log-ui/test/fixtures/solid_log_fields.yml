@@ -1,0 +1,23 @@
+user_id:
+  name: "user_id"
+  field_type: "number"
+  usage_count: 1500
+  promoted: true
+  filter_type: "tokens"
+  last_seen_at: <%= 1.day.ago.iso8601 %>
+
+session_id:
+  name: "session_id"
+  field_type: "string"
+  usage_count: 800
+  promoted: false
+  filter_type: "multiselect"
+  last_seen_at: <%= 2.hours.ago.iso8601 %>
+
+request_duration:
+  name: "request_duration"
+  field_type: "number"
+  usage_count: 2000
+  promoted: true
+  filter_type: "range"
+  last_seen_at: <%= 30.minutes.ago.iso8601 %>

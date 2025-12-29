@@ -1,0 +1,37 @@
+<div class="stream-footer-inline">
+  <%= render "timeline" %>
+
+  <div class="stream-footer-controls">
+    <button type="button" id="jump-to-live" class="btn btn-secondary btn-small">
+      ↓ Jump to Live
+    </button>
+
+    <% if SolidLog::UI.configuration.websocket_enabled %>
+      <button
+        type="button"
+        id="live-tail-toggle"
+        class="btn btn-secondary btn-small"
+        data-live-tail-mode="websocket"
+        title="Enable live streaming of new log entries">
+        ▶ Live Tail
+      </button>
+      <span id="live-tail-indicator" class="live-tail-status" style="display: none;">
+        <span class="status-dot"></span>
+        <span class="status-text">Streaming</span>
+      </span>
+    <% else %>
+      <button
+        type="button"
+        id="live-tail-toggle"
+        class="btn btn-secondary btn-small"
+        data-live-tail-mode="polling"
+        title="Enable polling for new log entries (WebSocket disabled)">
+        ▶ Live Tail
+      </button>
+      <span id="live-tail-indicator" class="live-tail-status" style="display: none;">
+        <span class="status-dot"></span>
+        <span class="status-text">Polling</span>
+      </span>
+    <% end %>
+  </div>
+</div>

@@ -20,32 +20,62 @@ This document provides a detailed overview of SolidLog's architecture, design de
 
 ## Overview
 
-SolidLog is a Rails engine that provides log ingestion, storage, parsing, and viewing capabilities using SQLite as the backing database. It's designed to replace expensive third-party log management services for small to medium Rails applications.
+SolidLog is a modular log management system built as three separate gems that work together. It provides log ingestion, storage, parsing, and viewing capabilities using SQLite (or PostgreSQL/MySQL) as the backing database. It's designed to replace expensive third-party log management services for small to medium Rails applications.
+
+**Architecture:**
+
+SolidLog is split into three gems, each with a specific responsibility:
+
+1. **solid_log-core**: Database models, adapters, parser, and core services
+2. **solid_log-service**: Background job processing, ingestion API, and workers
+3. **solid_log-ui**: Web interface (Rails engine) with Mission Control-style UI
+
+This modular design allows you to:
+- Deploy the service layer separately from the UI
+- Use only the core gem for custom implementations
+- Scale components independently
+- Test each layer in isolation
 
 **Key Components:**
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                     SolidLog Engine                      │
+│                     solid_log-service                    │
+│                   (Background Workers)                   │
 ├──────────────────────────────────────────────────────────┤
-│                                                          │
+│  ┌────────────┐  ┌────────────┐                         │
+│  │ HTTP API   │  │  Parser    │                         │
+│  │ Ingestion  │  │  Workers   │                         │
+│  └──────┬─────┘  └──────┬─────┘                         │
+└─────────┼────────────────┼──────────────────────────────┘
+          │                │
+          ▼                ▼
+┌──────────────────────────────────────────────────────────┐
+│                     solid_log-core                       │
+│              (Models, Services, Adapters)                │
+├──────────────────────────────────────────────────────────┤
+│  ┌──────────────────────────────────────────────┐       │
+│  │         Database (:log)                      │       │
+│  │  - solid_log_raw (append-only)               │       │
+│  │  - solid_log_entries (parsed, indexed)       │       │
+│  │  - solid_log_entries_fts (full-text search)  │       │
+│  │  - solid_log_fields (field registry)         │       │
+│  │  - solid_log_tokens (API auth)               │       │
+│  │  - solid_log_facet_cache (performance)       │       │
+│  └──────────────────────────────────────────────┘       │
+└──────────────────────────────────────────────────────────┘
+          │
+          ▼
+┌──────────────────────────────────────────────────────────┐
+│                     solid_log-ui                         │
+│                  (Rails Engine - Web UI)                 │
+├──────────────────────────────────────────────────────────┤
 │  ┌────────────┐  ┌────────────┐  ┌────────────┐        │
-│  │ HTTP API   │  │  Parser    │  │  Web UI    │        │
-│  │ Ingestion  │  │  Workers   │  │ (Mission   │        │
-│  │            │  │            │  │  Control)  │        │
-│  └──────┬─────┘  └──────┬─────┘  └──────┬─────┘        │
-│         │               │               │               │
-│         ▼               ▼               ▼               │
-│  ┌──────────────────────────────────────────────┐      │
-│  │         SQLite Database (:log)               │      │
-│  │  - solid_log_raw (append-only)               │      │
-│  │  - solid_log_entries (parsed, indexed)       │      │
-│  │  - solid_log_entries_fts (full-text search)  │      │
-│  │  - solid_log_fields (field registry)         │      │
-│  │  - solid_log_tokens (API auth)               │      │
-│  │  - solid_log_facet_cache (performance)       │      │
-│  └──────────────────────────────────────────────┘      │
+│  │ Dashboard  │  │  Streams   │  │ Timeline   │        │
+│  │            │  │  (Filters) │  │ (Corr.)    │        │
+│  └────────────┘  └────────────┘  └────────────┘        │
 │                                                          │
+│  Mission Control-style interface for viewing logs       │
 └──────────────────────────────────────────────────────────┘
 ```
 

@@ -1,0 +1,8 @@
+<div class="log-stream" id="log-stream-content">
+  <%# Entries come from query in DESC order (newest first) %>
+  <%# Reverse to ASC order (oldest first) so DOM is oldest→newest top→bottom %>
+  <%# Then scroll to bottom shows newest entries %>
+  <% entries.reverse.each do |entry| %>
+    <%= render "log_row", entry: entry, query: defined?(query) ? query : nil %>
+  <% end %>
+</div>

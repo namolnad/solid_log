@@ -1,0 +1,78 @@
+<h1>SolidLog Test Application</h1>
+
+<p>This test app demonstrates the 3-gem SolidLog architecture working together as a monolith.</p>
+
+<div class="stats">
+  <div class="stat">
+    <div class="stat-label">Raw Entries</div>
+    <div class="stat-value"><%= SolidLog::RawEntry.count %></div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Parsed Entries</div>
+    <div class="stat-value"><%= SolidLog::Entry.count %></div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Unparsed</div>
+    <div class="stat-value"><%= SolidLog::RawEntry.unparsed.count %></div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Tokens</div>
+    <div class="stat-value"><%= SolidLog::Token.count %></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Generate Single Log Entry</h2>
+  <%= form_with url: generate_log_generator_index_path, method: :post do |f| %>
+    <%= f.select :level, options_for_select([['Debug', 'debug'], ['Info', 'info'], ['Warn', 'warn'], ['Error', 'error'], ['Fatal', 'fatal']], 'info') %>
+    <%= f.text_field :message, placeholder: "Log message...", value: "Test log at #{Time.current.strftime('%H:%M:%S')}" %>
+    <%= f.submit "Generate Log", class: "btn" %>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>Generate Batch of Logs</h2>
+  <%= form_with url: generate_batch_log_generator_index_path, method: :post do |f| %>
+    <%= f.number_field :count, placeholder: "Count", value: 10, min: 1, max: 1000 %>
+    <%= f.submit "Generate Batch", class: "btn btn-success" %>
+  <% end %>
+  <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+    Generates multiple log entries at different log levels
+  </p>
+</div>
+
+<div class="card">
+  <h2>Background Job</h2>
+  <%= form_with url: trigger_job_log_generator_index_path, method: :post do |f| %>
+    <%= f.number_field :count, placeholder: "Count", value: 50, min: 1, max: 500 %>
+    <%= f.submit "Trigger Job", class: "btn btn-warning" %>
+  <% end %>
+  <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+    Enqueues a background job that generates logs asynchronously
+  </p>
+</div>
+
+<div class="card">
+  <h2>View Logs</h2>
+  <p>The SolidLog UI is mounted at <code>/logs</code></p>
+  <%= link_to "Open Log Viewer →", "/logs", class: "btn" %>
+</div>
+
+<div class="card">
+  <h2>Architecture Info</h2>
+  <ul style="line-height: 1.8;">
+    <li><strong>solid_log-core:</strong> Database models, adapters, parser, services</li>
+    <li><strong>solid_log-service:</strong> Background job processor (Scheduler mode)</li>
+    <li><strong>solid_log-ui:</strong> Web interface for viewing logs (Direct DB mode)</li>
+  </ul>
+  <p style="margin-top: 15px; font-size: 13px; color: #6c757d;">
+    All 3 gems are working together in this application. The scheduler is running background jobs
+    to parse raw entries, the UI provides the web interface, and core provides all the data models.
+  </p>
+</div>
+
+<div class="card">
+  <h2>Manual Actions</h2>
+  <%= link_to "Parse Logs Now", "#", class: "btn", onclick: "alert('This would trigger SolidLog::ParserJob.perform_now'); return false;" %>
+  <%= link_to "Clear All Logs", "#", class: "btn btn-danger", onclick: "if(confirm('Are you sure?')) { alert('This would delete all logs'); } return false;" %>
+</div>

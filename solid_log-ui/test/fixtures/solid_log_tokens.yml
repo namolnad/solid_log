@@ -1,0 +1,11 @@
+production_token:
+  name: "Production API"
+  token_digest: "$2a$12$abcdefghijklmnopqrstuvwxyz123456789ABCDEFGHIJKLMNOPQRST"
+  created_at: <%= 1.week.ago.iso8601 %>
+  last_used_at: <%= 1.hour.ago.iso8601 %>
+
+staging_token:
+  name: "Staging Environment"
+  token_digest: "$2a$12$zyxwvutsrqponmlkjihgfedcba987654321ZYXWVUTSRQPONMLKJIH"
+  created_at: <%= 3.days.ago.iso8601 %>
+  last_used_at: <%= 2.hours.ago.iso8601 %>
