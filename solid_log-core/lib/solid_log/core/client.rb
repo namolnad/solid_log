@@ -1,8 +1,8 @@
-require_relative 'client/configuration'
-require_relative 'client/buffer'
-require_relative 'client/http'
-require_relative 'client/retry_handler'
-require_relative 'client/lograge_formatter'
+require_relative "client/configuration"
+require_relative "client/buffer"
+require_relative "client/http"
+require_relative "client/retry_handler"
+require_relative "client/lograge_formatter"
 
 module SolidLog
   module Core
@@ -121,9 +121,9 @@ module SolidLog
                    rescue JSON::ParserError
                      { message: message, level: level }
                    end
-                 else
+          else
                    message.merge(level: level)
-                 end
+          end
 
           # Add default fields
           entry[:timestamp] ||= Time.current.iso8601

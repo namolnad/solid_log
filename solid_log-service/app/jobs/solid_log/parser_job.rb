@@ -1,4 +1,4 @@
-require 'action_cable' if defined?(Rails)
+require "action_cable" if defined?(Rails)
 
 module SolidLog
   class ParserJob < ApplicationJob

@@ -163,7 +163,7 @@ module SolidLog
       # Create orphaned raw entries
       3.times do |i|
         RawEntry.create!(
-          payload: {timestamp: Time.current.iso8601, level: "info", message: "Orphan #{i}"}.to_json,
+          payload: { timestamp: Time.current.iso8601, level: "info", message: "Orphan #{i}" }.to_json,
           token_id: @token[:id],
           received_at: 35.days.ago,
           parsed: true,
@@ -175,7 +175,7 @@ module SolidLog
       2.times do |i|
         FacetCache.create!(
           key_name: "old_cache_#{i}",
-          cache_value: {data: "test"}.to_json,
+          cache_value: { data: "test" }.to_json,
           expires_at: 1.day.ago
         )
       end
@@ -199,7 +199,7 @@ module SolidLog
 
       # Create orphaned raw entry (parsed but no entry)
       orphaned_raw = RawEntry.create!(
-        payload: {timestamp: Time.current.iso8601, level: "info", message: "Orphaned"}.to_json,
+        payload: { timestamp: Time.current.iso8601, level: "info", message: "Orphaned" }.to_json,
         token_id: @token[:id],
         received_at: 1.day.ago,
         parsed: true,
@@ -208,7 +208,7 @@ module SolidLog
 
       # Create unparsed raw entry (should be preserved for investigation)
       unparsed_raw = RawEntry.create!(
-        payload: {timestamp: Time.current.iso8601, level: "info", message: "Unparsed"}.to_json,
+        payload: { timestamp: Time.current.iso8601, level: "info", message: "Unparsed" }.to_json,
         token_id: @token[:id],
         received_at: 1.day.ago,
         parsed: false
@@ -230,14 +230,14 @@ module SolidLog
       # Create expired cache
       expired_cache = FacetCache.create!(
         key_name: "old_facet",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.day.ago
       )
 
       # Create valid cache
       valid_cache = FacetCache.create!(
         key_name: "new_facet",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.day.from_now
       )
 

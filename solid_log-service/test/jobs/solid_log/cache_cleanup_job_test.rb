@@ -7,7 +7,7 @@ module SolidLog
       3.times do |i|
         FacetCache.create!(
           key_name: "expired_#{i}",
-          cache_value: {data: "test"}.to_json,
+          cache_value: { data: "test" }.to_json,
           expires_at: 1.day.ago
         )
       end
@@ -16,7 +16,7 @@ module SolidLog
       2.times do |i|
         FacetCache.create!(
           key_name: "valid_#{i}",
-          cache_value: {data: "test"}.to_json,
+          cache_value: { data: "test" }.to_json,
           expires_at: 1.day.from_now
         )
       end
@@ -50,7 +50,7 @@ module SolidLog
       3.times do |i|
         FacetCache.create!(
           key_name: "valid_#{i}",
-          cache_value: {data: "test"}.to_json,
+          cache_value: { data: "test" }.to_json,
           expires_at: 1.day.from_now
         )
       end
@@ -71,7 +71,7 @@ module SolidLog
       # Create expired cache
       FacetCache.create!(
         key_name: "expired",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.day.ago
       )
 
@@ -96,21 +96,21 @@ module SolidLog
       # Create cache with nil expires_at (never expires)
       never_expires = FacetCache.create!(
         key_name: "permanent",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: nil
       )
 
       # Create expired cache
       expired = FacetCache.create!(
         key_name: "expired",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.day.ago
       )
 
       # Create valid cache
       valid = FacetCache.create!(
         key_name: "valid",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.day.from_now
       )
 
@@ -130,14 +130,14 @@ module SolidLog
       # Create expired cache
       FacetCache.create!(
         key_name: "expired",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.day.ago
       )
 
       # Create valid cache
       FacetCache.create!(
         key_name: "valid",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.day.from_now
       )
 
@@ -155,7 +155,7 @@ module SolidLog
       # Create cache that expired 1 second ago
       just_expired = FacetCache.create!(
         key_name: "just_expired",
-        cache_value: {data: "test"}.to_json,
+        cache_value: { data: "test" }.to_json,
         expires_at: 1.second.ago
       )
 

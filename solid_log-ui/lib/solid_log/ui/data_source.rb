@@ -1,4 +1,4 @@
-require_relative 'api_client'
+require_relative "api_client"
 
 module SolidLog
   module UI
@@ -18,7 +18,7 @@ module SolidLog
           SolidLog::Entry.find(id)
         else
           result = api_client.entry(id)
-          OpenStruct.new(result['entry'])
+          OpenStruct.new(result["entry"])
         end
       end
 
@@ -39,7 +39,7 @@ module SolidLog
           SolidLog::SearchService.facets_for(field)
         else
           result = api_client.facets(field)
-          result['values']
+          result["values"]
         end
       end
 
@@ -47,17 +47,17 @@ module SolidLog
       def all_facets
         if direct_db_mode?
           {
-            level: SolidLog::SearchService.facets_for('level'),
-            app: SolidLog::SearchService.facets_for('app'),
-            env: SolidLog::SearchService.facets_for('env'),
-            controller: SolidLog::SearchService.facets_for('controller'),
-            action: SolidLog::SearchService.facets_for('action'),
-            method: SolidLog::SearchService.facets_for('method'),
-            status_code: SolidLog::SearchService.facets_for('status_code')
+            level: SolidLog::SearchService.facets_for("level"),
+            app: SolidLog::SearchService.facets_for("app"),
+            env: SolidLog::SearchService.facets_for("env"),
+            controller: SolidLog::SearchService.facets_for("controller"),
+            action: SolidLog::SearchService.facets_for("action"),
+            method: SolidLog::SearchService.facets_for("method"),
+            status_code: SolidLog::SearchService.facets_for("status_code")
           }
         else
           result = api_client.all_facets
-          result['facets']
+          result["facets"]
         end
       end
 
@@ -92,7 +92,7 @@ module SolidLog
         if direct_db_mode?
           SolidLog::HealthService.metrics
         else
-          api_client.health['metrics']
+          api_client.health["metrics"]
         end
       end
 
@@ -135,7 +135,7 @@ module SolidLog
       def parse_entries_response(result)
         # Convert API response to array of OpenStruct objects
         # This makes them compatible with views that expect ActiveRecord objects
-        (result['entries'] || []).map { |entry| OpenStruct.new(entry) }
+        (result["entries"] || []).map { |entry| OpenStruct.new(entry) }
       end
 
       def per_page

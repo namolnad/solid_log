@@ -31,7 +31,7 @@ module SolidLog
 
       unparsed = create_raw_entry(token: @token)
 
-      assert_equal [ unparsed ], RawEntry.unparsed.to_a
+      assert_equal [unparsed], RawEntry.unparsed.to_a
     end
 
     test "parsed scope returns only parsed entries" do
@@ -40,7 +40,7 @@ module SolidLog
 
       create_raw_entry(token: @token)
 
-      assert_equal [ parsed ], RawEntry.parsed.to_a
+      assert_equal [parsed], RawEntry.parsed.to_a
     end
 
     test "stale_unparsed returns entries older than threshold" do

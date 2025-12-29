@@ -55,7 +55,7 @@ module SolidLog
 
     test "requires entry level" do
       raw_entry = RawEntry.create!(
-        payload: {message: "test"}.to_json,
+        payload: { message: "test" }.to_json,
         token_id: create_test_token[:id]
       )
 
@@ -71,7 +71,7 @@ module SolidLog
 
     test "requires entry timestamp" do
       raw_entry = RawEntry.create!(
-        payload: {message: "test"}.to_json,
+        payload: { message: "test" }.to_json,
         token_id: create_test_token[:id]
       )
 
@@ -115,7 +115,7 @@ module SolidLog
     # Test data integrity
     test "prevents saving entry without created_at" do
       raw_entry = RawEntry.create!(
-        payload: {message: "test"}.to_json,
+        payload: { message: "test" }.to_json,
         token_id: create_test_token[:id]
       )
 
@@ -131,7 +131,7 @@ module SolidLog
 
     test "allows entry with nil extra_fields" do
       raw_entry = RawEntry.create!(
-        payload: {message: "test"}.to_json,
+        payload: { message: "test" }.to_json,
         token_id: create_test_token[:id]
       )
 
@@ -150,8 +150,8 @@ module SolidLog
 
     test "allows multiple entries with nil request_id" do
       token = create_test_token
-      raw1 = RawEntry.create!(payload: {message: "test1"}.to_json, token_id: token[:id])
-      raw2 = RawEntry.create!(payload: {message: "test2"}.to_json, token_id: token[:id])
+      raw1 = RawEntry.create!(payload: { message: "test1" }.to_json, token_id: token[:id])
+      raw2 = RawEntry.create!(payload: { message: "test2" }.to_json, token_id: token[:id])
 
       # Both should succeed even with nil request_id (not a unique constraint)
       entry1 = Entry.create!(

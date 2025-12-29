@@ -21,7 +21,7 @@ class CreateSolidLogEntries < ActiveRecord::Migration[8.0]
 
     add_index :solid_log_entries, :timestamp, order: { timestamp: :desc }, name: "idx_entries_timestamp"
     add_index :solid_log_entries, :level, name: "idx_entries_level"
-    add_index :solid_log_entries, [ :app, :env, :timestamp ], order: { timestamp: :desc }, name: "idx_entries_app_env_time"
+    add_index :solid_log_entries, [:app, :env, :timestamp], order: { timestamp: :desc }, name: "idx_entries_app_env_time"
     add_index :solid_log_entries, :request_id, name: "idx_entries_request"
     add_index :solid_log_entries, :job_id, name: "idx_entries_job"
     add_index :solid_log_entries, :raw_id, name: "idx_entries_raw"

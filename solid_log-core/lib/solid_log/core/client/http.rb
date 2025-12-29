@@ -1,6 +1,6 @@
-require 'net/http'
-require 'json'
-require 'uri'
+require "net/http"
+require "json"
+require "uri"
 
 module SolidLog
   module Core
@@ -40,15 +40,15 @@ module SolidLog
         request["Authorization"] = "Bearer #{@token}"
         request["Content-Type"] = if entries.size == 1
                                     "application/json"
-                                  else
+        else
                                     "application/x-ndjson"
-                                  end
+        end
 
         request.body = if entries.size == 1
                         JSON.generate(entries.first)
-                      else
+        else
                         entries.map { |e| JSON.generate(e) }.join("\n")
-                      end
+        end
 
         request
       end

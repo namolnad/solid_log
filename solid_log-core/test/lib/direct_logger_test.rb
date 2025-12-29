@@ -41,7 +41,7 @@ module SolidLog
     end
 
     test "auto-flushes when batch size reached" do
-      log_data = {message: "Test"}.to_json
+      log_data = { message: "Test" }.to_json
 
       # Write exactly batch_size logs
       10.times do
@@ -117,7 +117,7 @@ module SolidLog
     end
 
     test "uses nil token_id by default (no authentication needed)" do
-      @logger.write({message: "test"}.to_json)
+      @logger.write({ message: "test" }.to_json)
       @logger.flush
 
       entry = RawEntry.last
@@ -131,7 +131,7 @@ module SolidLog
       log_written = false
 
       SolidLog.without_logging do
-        @logger.write({message: "Should be written"}.to_json)
+        @logger.write({ message: "Should be written" }.to_json)
         log_written = true
       end
 
@@ -143,7 +143,7 @@ module SolidLog
     end
 
     test "closes cleanly and flushes remaining logs" do
-      5.times { @logger.write({message: "test"}.to_json) }
+      5.times { @logger.write({ message: "test" }.to_json) }
 
       assert_equal 5, @logger.buffer_size
 
@@ -168,7 +168,7 @@ module SolidLog
       5.times do |i|
         threads << Thread.new do
           logs_per_thread.times do |j|
-            test_logger.write({message: "Thread #{i} log #{j}"}.to_json)
+            test_logger.write({ message: "Thread #{i} log #{j}" }.to_json)
             write_count.increment
           end
         end
@@ -197,7 +197,7 @@ module SolidLog
     test "buffer size returns current buffer count" do
       assert_equal 0, @logger.buffer_size
 
-      3.times { @logger.write({message: "test"}.to_json) }
+      3.times { @logger.write({ message: "test" }.to_json) }
       assert_equal 3, @logger.buffer_size
 
       @logger.flush
@@ -207,7 +207,7 @@ module SolidLog
     test "respects custom batch size" do
       small_logger = DirectLogger.new(batch_size: 3, flush_interval: 60)
 
-      3.times { small_logger.write({message: "test"}.to_json) }
+      3.times { small_logger.write({ message: "test" }.to_json) }
 
       # Should auto-flush at size 3
       assert_equal 0, small_logger.buffer_size
@@ -226,7 +226,7 @@ module SolidLog
       config_logger = DirectLogger.new(flush_interval: 60)
 
       # Should use config value
-      7.times { config_logger.write({message: "test"}.to_json) }
+      7.times { config_logger.write({ message: "test" }.to_json) }
       assert_equal 0, config_logger.buffer_size
       assert_equal 7, RawEntry.count
 
@@ -241,17 +241,17 @@ module SolidLog
       eager_logger = DirectLogger.new(batch_size: 50, flush_interval: 60)
 
       # Write some info logs - should buffer
-      3.times { eager_logger.write({level: "info", message: "info log"}.to_json) }
+      3.times { eager_logger.write({ level: "info", message: "info log" }.to_json) }
       assert_equal 3, eager_logger.buffer_size, "Info logs should be buffered"
       assert_equal 0, RawEntry.count, "Info logs should not be flushed yet"
 
       # Write an error log - should flush immediately (including buffered logs)
-      eager_logger.write({level: "error", message: "error log"}.to_json)
+      eager_logger.write({ level: "error", message: "error log" }.to_json)
       assert_equal 0, eager_logger.buffer_size, "Error should trigger flush"
       assert_equal 4, RawEntry.count, "All logs should be flushed"
 
       # Write a fatal log - should also flush immediately
-      eager_logger.write({level: "fatal", message: "fatal log"}.to_json)
+      eager_logger.write({ level: "fatal", message: "fatal log" }.to_json)
       assert_equal 0, eager_logger.buffer_size, "Fatal should trigger flush"
       assert_equal 5, RawEntry.count, "Fatal log should be flushed"
 
@@ -267,7 +267,7 @@ module SolidLog
       )
 
       # Even error logs should buffer now
-      5.times { no_eager_logger.write({level: "error", message: "error"}.to_json) }
+      5.times { no_eager_logger.write({ level: "error", message: "error" }.to_json) }
       assert_equal 5, no_eager_logger.buffer_size, "Errors should buffer when eager flush disabled"
       assert_equal 0, RawEntry.count, "No auto-flush on errors"
 
@@ -282,7 +282,7 @@ module SolidLog
       ENV["SOLIDLOG_TOKEN_ID"] = test_token.id.to_s
 
       env_logger = DirectLogger.new(batch_size: 10, flush_interval: 60)
-      env_logger.write({message: "test"}.to_json)
+      env_logger.write({ message: "test" }.to_json)
       env_logger.flush
 
       entry = RawEntry.last
@@ -309,7 +309,7 @@ module SolidLog
         token_id: explicit_token.id
       )
 
-      explicit_logger.write({message: "test"}.to_json)
+      explicit_logger.write({ message: "test" }.to_json)
       explicit_logger.flush
 
       entry = RawEntry.last
@@ -331,7 +331,7 @@ module SolidLog
         token_id: audit_token.id
       )
 
-      audit_logger.write({message: "audited log"}.to_json)
+      audit_logger.write({ message: "audited log" }.to_json)
       audit_logger.flush
 
       entry = RawEntry.last

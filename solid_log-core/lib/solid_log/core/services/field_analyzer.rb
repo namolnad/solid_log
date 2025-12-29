@@ -70,13 +70,13 @@ module SolidLog
         # Type score (0-25 points)
         # Favor simple types that are easier to index
         type_score = case field.field_type
-                    when "string", "number", "boolean"
+        when "string", "number", "boolean"
                       25
-                    when "datetime"
+        when "datetime"
                       20
-                    else
+        else
                       10
-                    end
+        end
         score += type_score
 
         [100, score].min

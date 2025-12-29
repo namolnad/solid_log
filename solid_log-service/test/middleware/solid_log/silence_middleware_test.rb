@@ -145,7 +145,7 @@ module SolidLog
       env = Rack::MockRequest.env_for("/api/v1/ingest")
 
       # Create app with custom response
-      app = ->(env) { [201, {"X-Custom" => "header"}, ["Created"]] }
+      app = ->(env) { [201, { "X-Custom" => "header" }, ["Created"]] }
       middleware = SilenceMiddleware.new(app)
 
       status, headers, body = middleware.call(env)

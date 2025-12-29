@@ -35,7 +35,7 @@ module SolidLog
           # Create many old unparsed entries to trigger critical status
           100.times do |i|
             RawEntry.create!(
-              payload: {timestamp: Time.current.iso8601, level: "info"}.to_json,
+              payload: { timestamp: Time.current.iso8601, level: "info" }.to_json,
               token_id: create_test_token[:id],
               received_at: 2.hours.ago,
               parsed: false

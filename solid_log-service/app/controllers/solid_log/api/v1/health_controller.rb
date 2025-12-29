@@ -9,13 +9,13 @@ module SolidLog
           metrics = SolidLog::HealthService.metrics
 
           status = case metrics[:parsing][:health_status]
-                  when "critical"
+          when "critical"
                     :service_unavailable
-                  when "warning", "degraded"
+          when "warning", "degraded"
                     :ok  # Still functional
-                  else
+          else
                     :ok
-                  end
+          end
 
           render json: {
             status: metrics[:parsing][:health_status],

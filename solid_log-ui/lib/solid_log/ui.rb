@@ -1,9 +1,9 @@
-require 'solid_log/core'
-require_relative 'ui/version'
-require_relative 'ui/configuration'
-require_relative 'ui/data_source'
-require_relative 'ui/api_client'
-require_relative 'ui/engine' if defined?(Rails)
+require "solid_log/core"
+require_relative "ui/version"
+require_relative "ui/configuration"
+require_relative "ui/data_source"
+require_relative "ui/api_client"
+require_relative "ui/engine" if defined?(Rails)
 
 module SolidLog
   module UI

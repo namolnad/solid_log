@@ -127,10 +127,10 @@ module SolidLog
 
     test "filter_by_field filters by JSON field" do
       entry_with_field = create_entry(
-        extra_fields: {user_id: 42, ip: "192.168.1.1"}.to_json
+        extra_fields: { user_id: 42, ip: "192.168.1.1" }.to_json
       )
       entry_with_different_value = create_entry(
-        extra_fields: {user_id: 99}.to_json
+        extra_fields: { user_id: 99 }.to_json
       )
       entry_without_field = create_entry(extra_fields: nil)
 
@@ -183,7 +183,7 @@ module SolidLog
 
     test "extra_fields_hash parses JSON" do
       entry = create_entry(
-        extra_fields: {user_id: 42, action: "login"}.to_json
+        extra_fields: { user_id: 42, action: "login" }.to_json
       )
 
       hash = entry.extra_fields_hash

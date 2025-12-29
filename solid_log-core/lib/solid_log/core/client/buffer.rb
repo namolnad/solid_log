@@ -1,4 +1,4 @@
-require 'thread'
+require "thread"
 
 module SolidLog
   module Core

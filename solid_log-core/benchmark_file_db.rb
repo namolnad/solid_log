@@ -145,8 +145,8 @@ def run_benchmark_suite
   )
 
   eager_time = Benchmark.realtime do
-    500.times { eager_logger.write({level: "info", message: "info"}.to_json) }
-    500.times { eager_logger.write({level: "error", message: "error"}.to_json) }
+    500.times { eager_logger.write({ level: "info", message: "info" }.to_json) }
+    500.times { eager_logger.write({ level: "error", message: "error" }.to_json) }
     eager_logger.flush
   end
 
@@ -167,8 +167,8 @@ def run_benchmark_suite
   )
 
   no_eager_time = Benchmark.realtime do
-    500.times { no_eager_logger.write({level: "info", message: "info"}.to_json) }
-    500.times { no_eager_logger.write({level: "error", message: "error"}.to_json) }
+    500.times { no_eager_logger.write({ level: "info", message: "info" }.to_json) }
+    500.times { no_eager_logger.write({ level: "error", message: "error" }.to_json) }
     no_eager_logger.flush
   end
 

@@ -20,7 +20,7 @@ module SolidLog
 
       def fts_search(query)
         # PostgreSQL full-text search using tsvector
-        sanitized_query = connection.quote(query.gsub(/[^\w\s]/, ' '))
+        sanitized_query = connection.quote(query.gsub(/[^\w\s]/, " "))
         <<~SQL.squish
           WHERE to_tsvector('english', COALESCE(message, '') || ' ' || COALESCE(extra_fields::text, ''))
           @@ plainto_tsquery('english', #{sanitized_query})

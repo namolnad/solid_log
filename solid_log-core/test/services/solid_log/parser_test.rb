@@ -26,7 +26,7 @@ module SolidLog
 
     test "normalizes log levels" do
       ["INFO", "Info", "info"].each do |level|
-        payload = {timestamp: Time.current.iso8601, level: level, message: "test"}.to_json
+        payload = { timestamp: Time.current.iso8601, level: level, message: "test" }.to_json
         result = @parser.parse(payload)
 
         assert_equal "info", result[:level]
@@ -34,7 +34,7 @@ module SolidLog
     end
 
     test "defaults to info level for unknown levels" do
-      payload = {timestamp: Time.current.iso8601, level: "unknown_level", message: "test"}.to_json
+      payload = { timestamp: Time.current.iso8601, level: "unknown_level", message: "test" }.to_json
       result = @parser.parse(payload)
 
       assert_equal "info", result[:level]
@@ -50,7 +50,7 @@ module SolidLog
       ]
 
       formats.each do |timestamp|
-        payload = {timestamp: timestamp, level: "info", message: "test"}.to_json
+        payload = { timestamp: timestamp, level: "info", message: "test" }.to_json
         result = @parser.parse(payload)
 
         assert_instance_of Time, result[:timestamp]
@@ -58,7 +58,7 @@ module SolidLog
     end
 
     test "uses current time if no timestamp provided" do
-      payload = {level: "info", message: "test"}.to_json
+      payload = { level: "info", message: "test" }.to_json
 
       travel_to Time.current do
         result = @parser.parse(payload)
@@ -105,7 +105,7 @@ module SolidLog
         message: "test",
         user_id: 42,
         custom_field: "custom_value",
-        nested: {key: "value"}
+        nested: { key: "value" }
       }.to_json
 
       result = @parser.parse(payload)
@@ -113,7 +113,7 @@ module SolidLog
       assert result[:extra_fields].is_a?(Hash)
       assert_equal 42, result[:extra_fields]["user_id"]
       assert_equal "custom_value", result[:extra_fields]["custom_field"]
-      assert_equal({"key" => "value"}, result[:extra_fields]["nested"])
+      assert_equal({ "key" => "value" }, result[:extra_fields]["nested"])
     end
 
     test "returns nil for invalid JSON" do
@@ -145,7 +145,7 @@ module SolidLog
     end
 
     test "handles missing message field" do
-      payload = {timestamp: Time.current.iso8601, level: "info"}.to_json
+      payload = { timestamp: Time.current.iso8601, level: "info" }.to_json
       result = @parser.parse(payload)
 
       assert_nil result[:message]

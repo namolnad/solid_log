@@ -215,7 +215,7 @@ module SolidLog
       # Create 250 raw entries (more than default batch size of 200)
       250.times do |i|
         RawEntry.create!(
-          payload: {timestamp: Time.current.iso8601, level: "info", message: "Test #{i}"}.to_json,
+          payload: { timestamp: Time.current.iso8601, level: "info", message: "Test #{i}" }.to_json,
           token_id: @token_result[:id],
           received_at: Time.current
         )

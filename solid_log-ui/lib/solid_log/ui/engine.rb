@@ -1,6 +1,6 @@
-require 'importmap-rails'
-require 'turbo-rails'
-require 'stimulus-rails'
+require "importmap-rails"
+require "turbo-rails"
+require "stimulus-rails"
 
 module SolidLog
   module UI

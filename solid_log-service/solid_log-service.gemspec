@@ -3,8 +3,8 @@ require_relative "lib/solid_log/service/version"
 Gem::Specification.new do |spec|
   spec.name        = "solid_log-service"
   spec.version     = SolidLog::Service::VERSION
-  spec.authors     = [ "Dan Loman" ]
-  spec.email       = [ "daniel.h.loman@gmail.com" ]
+  spec.authors     = ["Dan Loman"]
+  spec.email       = ["daniel.h.loman@gmail.com"]
   spec.homepage    = "https://github.com/namolnad/solid_log"
   spec.summary     = "Standalone log ingestion and processing service for SolidLog"
   spec.description = "Provides HTTP API for log ingestion, background processing with built-in Scheduler, and query APIs. Can run as standalone service or integrate with existing Rails apps."

@@ -34,15 +34,15 @@ module SolidLog
         stale_unparsed = RawEntry.unparsed.where("received_at < ?", stale_threshold).count
 
         health_status = case
-                       when backlog_percentage > 50
+        when backlog_percentage > 50
                          "critical"
-                       when backlog_percentage > 20
+        when backlog_percentage > 20
                          "warning"
-                       when stale_unparsed > 100
+        when stale_unparsed > 100
                          "degraded"
-                       else
+        else
                          "healthy"
-                       end
+        end
 
         {
           unparsed_count: unparsed_count,

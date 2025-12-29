@@ -37,7 +37,7 @@ module SolidLog
       # Create 10 entries
       10.times do |i|
         RawEntry.create!(
-          payload: {timestamp: Time.current.iso8601, level: "info", message: "Test #{i}"}.to_json,
+          payload: { timestamp: Time.current.iso8601, level: "info", message: "Test #{i}" }.to_json,
           token_id: @token[:id],
           received_at: Time.current
         )
@@ -65,7 +65,7 @@ module SolidLog
       # Create 10 entries
       10.times do |i|
         RawEntry.create!(
-          payload: {timestamp: Time.current.iso8601, level: "info", message: "Test #{i}"}.to_json,
+          payload: { timestamp: Time.current.iso8601, level: "info", message: "Test #{i}" }.to_json,
           token_id: @token[:id],
           received_at: Time.current
         )
@@ -152,7 +152,7 @@ module SolidLog
           number_field: 123,
           boolean_field: false,
           array_field: [1, 2, 3],
-          object_field: {key: "value"}
+          object_field: { key: "value" }
         }.to_json,
         token_id: @token[:id],
         received_at: Time.current
@@ -170,21 +170,21 @@ module SolidLog
     test "handles parsing errors gracefully without crashing batch" do
       # Create valid entry
       RawEntry.create!(
-        payload: {timestamp: Time.current.iso8601, level: "info", message: "Valid"}.to_json,
+        payload: { timestamp: Time.current.iso8601, level: "info", message: "Valid" }.to_json,
         token_id: @token[:id],
         received_at: Time.current
       )
 
       # Create invalid entry (malformed JSON)
       raw_invalid = RawEntry.create!(
-        payload: '{invalid json',
+        payload: "{invalid json",
         token_id: @token[:id],
         received_at: Time.current
       )
 
       # Create another valid entry
       RawEntry.create!(
-        payload: {timestamp: Time.current.iso8601, level: "info", message: "Also valid"}.to_json,
+        payload: { timestamp: Time.current.iso8601, level: "info", message: "Also valid" }.to_json,
         token_id: @token[:id],
         received_at: Time.current
       )
@@ -222,7 +222,7 @@ module SolidLog
       # Create 3 entries
       3.times do |i|
         RawEntry.create!(
-          payload: {timestamp: Time.current.iso8601, level: "info", message: "Test #{i}"}.to_json,
+          payload: { timestamp: Time.current.iso8601, level: "info", message: "Test #{i}" }.to_json,
           token_id: @token[:id],
           received_at: Time.current
         )
@@ -304,7 +304,7 @@ module SolidLog
 
       # Create raw entry
       RawEntry.create!(
-        payload: {timestamp: Time.current.iso8601, level: "info", message: "Test"}.to_json,
+        payload: { timestamp: Time.current.iso8601, level: "info", message: "Test" }.to_json,
         token_id: @token[:id],
         received_at: Time.current
       )
@@ -378,7 +378,7 @@ module SolidLog
 
     test "creates entries with correct created_at timestamp" do
       RawEntry.create!(
-        payload: {timestamp: 1.hour.ago.iso8601, level: "info", message: "Old log"}.to_json,
+        payload: { timestamp: 1.hour.ago.iso8601, level: "info", message: "Old log" }.to_json,
         token_id: @token[:id],
         received_at: 1.hour.ago
       )
@@ -401,7 +401,7 @@ module SolidLog
       # Create 25 entries
       25.times do |i|
         RawEntry.create!(
-          payload: {timestamp: Time.current.iso8601, level: "info", message: "Test #{i}"}.to_json,
+          payload: { timestamp: Time.current.iso8601, level: "info", message: "Test #{i}" }.to_json,
           token_id: @token[:id],
           received_at: Time.current
         )

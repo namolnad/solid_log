@@ -1,6 +1,6 @@
-require 'net/http'
-require 'json'
-require 'uri'
+require "net/http"
+require "json"
+require "uri"
 
 module SolidLog
   module UI
@@ -17,7 +17,7 @@ module SolidLog
 
       # GET /api/v1/entries
       def entries(params = {})
-        get('/api/v1/entries', params)
+        get("/api/v1/entries", params)
       end
 
       # GET /api/v1/entries/:id
@@ -27,17 +27,17 @@ module SolidLog
 
       # POST /api/v1/search
       def search(query, params = {})
-        post('/api/v1/search', { q: query }.merge(params))
+        post("/api/v1/search", { q: query }.merge(params))
       end
 
       # GET /api/v1/facets
       def facets(field)
-        get('/api/v1/facets', { field: field })
+        get("/api/v1/facets", { field: field })
       end
 
       # GET /api/v1/facets/all
       def all_facets
-        get('/api/v1/facets/all')
+        get("/api/v1/facets/all")
       end
 
       # GET /api/v1/timelines/request/:request_id
@@ -52,7 +52,7 @@ module SolidLog
 
       # GET /api/v1/health
       def health
-        get('/api/v1/health')
+        get("/api/v1/health")
       end
 
       private
@@ -62,8 +62,8 @@ module SolidLog
         uri.query = URI.encode_www_form(params) if params.any?
 
         request = Net::HTTP::Get.new(uri)
-        request['Authorization'] = "Bearer #{@token}"
-        request['Content-Type'] = 'application/json'
+        request["Authorization"] = "Bearer #{@token}"
+        request["Content-Type"] = "application/json"
 
         perform_request(uri, request)
       end
@@ -72,8 +72,8 @@ module SolidLog
         uri = URI.parse("#{@base_url}#{path}")
 
         request = Net::HTTP::Post.new(uri)
-        request['Authorization'] = "Bearer #{@token}"
-        request['Content-Type'] = 'application/json'
+        request["Authorization"] = "Bearer #{@token}"
+        request["Content-Type"] = "application/json"
         request.body = JSON.generate(body)
 
         perform_request(uri, request)
@@ -81,7 +81,7 @@ module SolidLog
 
       def perform_request(uri, request)
         http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = (uri.scheme == 'https')
+        http.use_ssl = (uri.scheme == "https")
         http.open_timeout = 5
         http.read_timeout = 30
 

@@ -3,8 +3,8 @@ require_relative "lib/solid_log/core/version"
 Gem::Specification.new do |spec|
   spec.name        = "solid_log-core"
   spec.version     = SolidLog::Core::VERSION
-  spec.authors     = [ "Dan Loman" ]
-  spec.email       = [ "daniel.h.loman@gmail.com" ]
+  spec.authors     = ["Dan Loman"]
+  spec.email       = ["daniel.h.loman@gmail.com"]
   spec.homepage    = "https://github.com/namolnad/solid_log"
   spec.summary     = "Core models and database adapters for SolidLog"
   spec.description = "Provides shared models, database adapters, parser, and HTTP client for SolidLog service and UI gems. Supports SQLite, PostgreSQL, and MySQL."

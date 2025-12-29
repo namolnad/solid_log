@@ -87,7 +87,7 @@ module SolidLog
       complex_data = {
         apps: ["web", "api"],
         envs: ["production", "staging"],
-        counts: {total: 100, errors: 5}
+        counts: { total: 100, errors: 5 }
       }
 
       result = FacetCache.fetch("complex", ttl: 5.minutes) do

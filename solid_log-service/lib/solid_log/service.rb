@@ -1,9 +1,9 @@
-require 'solid_log/core'
-require_relative 'service/version'
-require_relative 'service/configuration'
-require_relative 'service/scheduler'
-require_relative 'service/job_processor'
-require_relative 'service/engine'
+require "solid_log/core"
+require_relative "service/version"
+require_relative "service/configuration"
+require_relative "service/scheduler"
+require_relative "service/job_processor"
+require_relative "service/engine"
 
 module SolidLog
   module Service
