@@ -1,5 +1,6 @@
 # Configure Rails Environment
 ENV["RAILS_ENV"] = "test"
+ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
 
 require "bundler/setup"
 require "minitest/autorun"

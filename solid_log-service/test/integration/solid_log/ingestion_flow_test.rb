@@ -2,7 +2,6 @@ require "test_helper"
 
 module SolidLog
   class IngestionFlowTest < RackTestCase
-
     setup do
           ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
       @token_result = Token.generate!("Test API")

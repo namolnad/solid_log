@@ -1,5 +1,5 @@
-require 'rack'
-require 'json'
+require "rack"
+require "json"
 
 module SolidLog
   module Service
@@ -24,34 +24,34 @@ module SolidLog
       # Router - matches HTTP method and path to handler using pattern matching
       def route(method, path, request)
         # Split path into segments for easier matching
-        segments = path.split('/').reject(&:empty?)
+        segments = path.split("/").reject(&:empty?)
 
         # Pattern match on [method, segments]
         case [method, segments]
         # POST routes
-        in ['POST', ['api', 'v1', 'ingest']]
+        in ["POST", ["api", "v1", "ingest"]]
           handle_ingest(request)
-        in ['POST', ['api', 'v1', 'search']]
+        in ["POST", ["api", "v1", "search"]]
           handle_search(request)
 
         # GET routes - static
-        in ['GET', ['api', 'v1', 'entries']]
+        in ["GET", ["api", "v1", "entries"]]
           handle_entries_index(request)
-        in ['GET', ['api', 'v1', 'facets']]
+        in ["GET", ["api", "v1", "facets"]]
           handle_facets(request)
-        in ['GET', ['api', 'v1', 'facets', 'all']]
+        in ["GET", ["api", "v1", "facets", "all"]]
           handle_facets_all(request)
-        in ['GET', ['health']] | ['GET', ['api', 'v1', 'health']]
+        in ["GET", ["health"]] | ["GET", ["api", "v1", "health"]]
           handle_health(request)
-        in ['GET', ['cable']]
+        in ["GET", ["cable"]]
           ActionCable.server.call(request.env)
 
         # GET routes - with parameters
-        in ['GET', ['api', 'v1', 'entries', id]]
+        in ["GET", ["api", "v1", "entries", id]]
           handle_entries_show(request, id)
-        in ['GET', ['api', 'v1', 'timeline', 'request', request_id]]
+        in ["GET", ["api", "v1", "timeline", "request", request_id]]
           handle_timeline_request(request, request_id)
-        in ['GET', ['api', 'v1', 'timeline', 'job', job_id]]
+        in ["GET", ["api", "v1", "timeline", "job", job_id]]
           handle_timeline_job(request, job_id)
 
         else
@@ -119,7 +119,7 @@ module SolidLog
         response(200, {
           entries: entries.as_json(methods: [:extra_fields_hash]),
           total: entries.count,
-          limit: request.params['limit']&.to_i || 100
+          limit: request.params["limit"]&.to_i || 100
         })
       end
 
@@ -143,14 +143,14 @@ module SolidLog
         token = authenticate!(request)
         return token unless token.is_a?(SolidLog::Token)
 
-        field = request.params['field']
+        field = request.params["field"]
 
         # If no field parameter, return all facets (same as /facets/all)
         if field.blank?
           return handle_facets_all(request)
         end
 
-        limit = request.params['limit']&.to_i || 100
+        limit = request.params["limit"]&.to_i || 100
         facets = SolidLog::Entry.facets_for(field, limit: limit)
 
         token.touch_last_used!
@@ -191,14 +191,14 @@ module SolidLog
         body = request.body.read
         params = body.present? ? JSON.parse(body) : {}
 
-        query = params['q'] || params['query'] || request.params['q'] || request.params['query']
+        query = params["q"] || params["query"] || request.params["q"] || request.params["query"]
         if query.blank?
           return bad_request("Query parameter required")
         end
 
         search_params = {
           query: query,
-          limit: params['limit'] || request.params['limit']
+          limit: params["limit"] || request.params["limit"]
         }.compact
 
         search_service = SolidLog::SearchService.new(search_params)
@@ -210,7 +210,7 @@ module SolidLog
           query: query,
           entries: entries.as_json(methods: [:extra_fields_hash]),
           total: entries.count,
-          limit: (params['limit'] || request.params['limit'])&.to_i || 100
+          limit: (params["limit"] || request.params["limit"])&.to_i || 100
         })
       end
 
@@ -278,12 +278,12 @@ module SolidLog
 
       # Authentication
       def authenticate!(request)
-        header = request.get_header('HTTP_AUTHORIZATION')
+        header = request.get_header("HTTP_AUTHORIZATION")
         unless header&.match?(/\A(Bearer|bearer) /)
           return unauthorized("Missing or invalid Authorization header")
         end
 
-        token_value = header.sub(/\A(Bearer|bearer) /, '')
+        token_value = header.sub(/\A(Bearer|bearer) /, "")
         token = SolidLog::Token.authenticate(token_value)
 
         unless token
@@ -296,7 +296,7 @@ module SolidLog
       # Parse ingest payload (supports JSON, JSON array, and NDJSON)
       def parse_ingest_payload(request)
         # Check for _json param (Rails-style JSON array parsing)
-        return request.params['_json'] if request.params['_json']
+        return request.params["_json"] if request.params["_json"]
 
         body = request.body.read
         return [] if body.blank?
@@ -319,24 +319,24 @@ module SolidLog
         search_params = {}
 
         # Handle filters hash if present
-        if params['filters'].is_a?(Hash)
-          filters = params['filters']
-          search_params[:levels] = [filters['level']].compact if filters['level'].to_s.present?
-          search_params[:app] = filters['app'] if filters['app'].to_s.present?
-          search_params[:env] = filters['env'] if filters['env'].to_s.present?
-          search_params[:controller] = filters['controller'] if filters['controller'].to_s.present?
-          search_params[:action] = filters['action'] if filters['action'].to_s.present?
-          search_params[:path] = filters['path'] if filters['path'].to_s.present?
-          search_params[:method] = filters['method'] if filters['method'].to_s.present?
-          search_params[:status_code] = filters['status_code'] if filters['status_code'].to_s.present?
-          search_params[:start_time] = filters['start_time'] if filters['start_time'].to_s.present?
-          search_params[:end_time] = filters['end_time'] if filters['end_time'].to_s.present?
-          search_params[:min_duration] = filters['min_duration'] if filters['min_duration'].to_s.present?
-          search_params[:max_duration] = filters['max_duration'] if filters['max_duration'].to_s.present?
+        if params["filters"].is_a?(Hash)
+          filters = params["filters"]
+          search_params[:levels] = [filters["level"]].compact if filters["level"].to_s.present?
+          search_params[:app] = filters["app"] if filters["app"].to_s.present?
+          search_params[:env] = filters["env"] if filters["env"].to_s.present?
+          search_params[:controller] = filters["controller"] if filters["controller"].to_s.present?
+          search_params[:action] = filters["action"] if filters["action"].to_s.present?
+          search_params[:path] = filters["path"] if filters["path"].to_s.present?
+          search_params[:method] = filters["method"] if filters["method"].to_s.present?
+          search_params[:status_code] = filters["status_code"] if filters["status_code"].to_s.present?
+          search_params[:start_time] = filters["start_time"] if filters["start_time"].to_s.present?
+          search_params[:end_time] = filters["end_time"] if filters["end_time"].to_s.present?
+          search_params[:min_duration] = filters["min_duration"] if filters["min_duration"].to_s.present?
+          search_params[:max_duration] = filters["max_duration"] if filters["max_duration"].to_s.present?
         end
 
-        search_params[:query] = params['q'] if params['q'].to_s.present?
-        search_params[:limit] = params['limit'] if params['limit'].to_s.present?
+        search_params[:query] = params["q"] if params["q"].to_s.present?
+        search_params[:limit] = params["limit"] if params["limit"].to_s.present?
 
         search_params
       end
@@ -375,7 +375,7 @@ module SolidLog
       end
 
       def json_headers
-        { 'Content-Type' => 'application/json' }
+        { "Content-Type" => "application/json" }
       end
     end
   end

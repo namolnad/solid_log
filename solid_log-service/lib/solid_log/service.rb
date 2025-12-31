@@ -40,7 +40,7 @@ module SolidLog
       def start!
         # Configure core logger if not already set
         unless SolidLog.logger
-          require 'logger'
+          require "logger"
           SolidLog.logger = Logger.new(STDOUT).tap do |log|
             log.level = ENV.fetch("LOG_LEVEL", "info").to_sym
           end

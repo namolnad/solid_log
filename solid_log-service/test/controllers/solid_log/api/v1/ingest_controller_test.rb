@@ -8,7 +8,7 @@ module SolidLog
           @token_result = Token.generate!("Test API")
           @token = @token_result[:token]
           # Set SOLIDLOG_SECRET_KEY for token authentication
-          ENV['SOLIDLOG_SECRET_KEY'] ||= 'test-secret-key-for-tests'
+          ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
         end
 
         test "POST /ingest with valid token and single entry" do
@@ -19,7 +19,7 @@ module SolidLog
             app: "test-app"
           }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -41,7 +41,7 @@ module SolidLog
             }
           end
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -93,7 +93,7 @@ module SolidLog
 
           payload = { level: "info", message: "test" }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -112,7 +112,7 @@ module SolidLog
             custom_field: "custom_value"
           }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -135,7 +135,7 @@ module SolidLog
             }
           end
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -192,7 +192,7 @@ module SolidLog
             { level: "info", message: "Log #{i}" }
           end
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -209,7 +209,7 @@ module SolidLog
             { level: "info", message: "Log #{i}" }
           end
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -295,7 +295,7 @@ module SolidLog
             app: "test"
           }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -314,7 +314,7 @@ module SolidLog
             message: "A" * 10_000 # 10KB message
           }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -352,7 +352,7 @@ module SolidLog
             custom_field: nil
           }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -374,7 +374,7 @@ module SolidLog
             path: "/api/test?param=value&other=123"
           }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -398,7 +398,7 @@ module SolidLog
             tags: ["api", "production", "critical"]
           }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -417,7 +417,7 @@ module SolidLog
 
           payload = { level: "info", message: "test" }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",
@@ -434,7 +434,7 @@ module SolidLog
         test "POST /ingest marks entry as unparsed" do
           payload = { level: "info", message: "test" }
 
-          post '/api/v1/ingest',
+          post "/api/v1/ingest",
             payload.to_json,
             {
               "HTTP_AUTHORIZATION" => "Bearer #{@token}",

@@ -4,7 +4,6 @@ module SolidLog
   module Api
     module V1
       class HealthControllerTest < RackTestCase
-
         test "GET /health returns health metrics without authentication" do
           # Health endpoint should not require authentication
           get "/api/v1/health"

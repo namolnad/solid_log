@@ -4,7 +4,6 @@ module SolidLog
   module Api
     module V1
       class SearchControllerTest < RackTestCase
-
         setup do
           ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
           @token_result = Token.generate!("Test API")
