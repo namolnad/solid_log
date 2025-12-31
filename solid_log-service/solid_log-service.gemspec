@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "solid_log-core", "~> 0.1.0"
   spec.add_dependency "rack", "~> 3.0"
-  spec.add_dependency "puma", "~> 6.0"
+  spec.add_dependency "puma", ">= 6", "< 8"
   spec.add_dependency "activesupport", "~> 8.0"
   spec.add_dependency "activerecord", "~> 8.0"
   spec.add_dependency "actioncable", "~> 8.0"
