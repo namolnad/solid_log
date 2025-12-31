@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
 
   # Development dependencies
   spec.add_development_dependency "sqlite3", ">= 2.1"
-  spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency "minitest", "~> 6.0"
   spec.add_development_dependency "combustion", "~> 1.3"
   spec.add_development_dependency "rails-controller-testing"
   spec.add_development_dependency "rake", "~> 13.0"
