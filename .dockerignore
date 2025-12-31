@@ -1,0 +1,64 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE*
+.github
+
+# Development
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Test files
+test/
+spec/
+*_test.rb
+*_spec.rb
+.rspec
+
+# Development dependencies
+Gemfile.lock
+.bundle/
+
+# Logs
+*.log
+log/
+tmp/
+
+# Database
+*.sqlite3
+*.db
+storage/
+
+# Dependencies
+node_modules/
+vendor/bundle/
+
+# CI/CD
+.travis.yml
+.circleci/
+.gitlab-ci.yml
+
+# Demo app
+demo/
+
+# Build artifacts
+*.gem
+pkg/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files with secrets
+.env
+.env.*
+!.env.example

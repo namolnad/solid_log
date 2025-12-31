@@ -2,6 +2,7 @@ require "solid_log/core/version"
 require "solid_log/core/configuration"
 require "solid_log/core/client"
 require "solid_log/silence_middleware"
+require "logger"
 
 # Database adapters
 require "solid_log/adapters/base_adapter"
@@ -69,6 +70,19 @@ module SolidLog
       def silenced?
         Thread.current[:solid_log_silenced] == true
       end
+
+      # Logger singleton - works in Rails and non-Rails contexts
+      def logger
+        @logger ||= if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+          Rails.logger
+        else
+          Logger.new(STDOUT).tap { |log| log.level = Logger::INFO }
+        end
+      end
+
+      def logger=(logger)
+        @logger = logger
+      end
     end
   end
 end
@@ -94,6 +108,14 @@ module SolidLog
 
     def silenced?
       Core.silenced?
+    end
+
+    def logger
+      Core.logger
+    end
+
+    def logger=(logger)
+      Core.logger = logger
     end
   end
 

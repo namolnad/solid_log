@@ -54,7 +54,7 @@ module SolidLog
     # Generate deterministic hash using HMAC-SHA256
     # This allows O(1) database lookups while maintaining security
     def self.hash_token(plaintext)
-      secret_key = Rails.application.secret_key_base || raise("secret_key_base not configured")
+      secret_key = ENV['SOLIDLOG_SECRET_KEY'] || raise("SOLIDLOG_SECRET_KEY environment variable not set")
       OpenSSL::HMAC.hexdigest("SHA256", secret_key, plaintext)
     end
   end

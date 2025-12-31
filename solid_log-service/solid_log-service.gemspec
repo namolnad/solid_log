@@ -15,24 +15,21 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"] = "https://github.com/namolnad/solid_log/blob/main/CHANGELOG.md"
 
   spec.files = Dir.chdir(File.expand_path(__dir__)) do
-    Dir["{app,bin,config,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md", "config.ru"]
+    Dir["{config,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md", "config.ru"]
   end
 
-  spec.bindir = "bin"
-  spec.executables = ["solid_log_service"]
-
   spec.add_dependency "solid_log-core", "~> 0.1.0"
-  spec.add_dependency "rails", ">= 8.0.2"
+  spec.add_dependency "rack", "~> 3.0"
   spec.add_dependency "puma", "~> 6.0"
+  spec.add_dependency "activesupport", "~> 8.0"
+  spec.add_dependency "activerecord", "~> 8.0"
+  spec.add_dependency "actioncable", "~> 8.0"
+  spec.add_dependency "rack-cors", "~> 2.0"
 
   # Development dependencies
   spec.add_development_dependency "sqlite3", ">= 2.1"
   spec.add_development_dependency "minitest", ">= 5.0"
-  spec.add_development_dependency "combustion", "~> 1.4"
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "debug"
   spec.add_development_dependency "rubocop"
-  spec.add_development_dependency "rubocop-rails-omakase"
-  spec.add_development_dependency "rack-cors"
-  spec.add_development_dependency "solid_cable"
 end

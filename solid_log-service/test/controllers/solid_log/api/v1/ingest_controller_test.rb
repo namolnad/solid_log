@@ -3,12 +3,12 @@ require "test_helper"
 module SolidLog
   module Api
     module V1
-      class IngestControllerTest < ActionDispatch::IntegrationTest
-        include Service::Engine.routes.url_helpers
-
+      class IngestControllerTest < RackTestCase
         setup do
           @token_result = Token.generate!("Test API")
           @token = @token_result[:token]
+          # Set SOLIDLOG_SECRET_KEY for token authentication
+          ENV['SOLIDLOG_SECRET_KEY'] ||= 'test-secret-key-for-tests'
         end
 
         test "POST /ingest with valid token and single entry" do
@@ -19,16 +19,16 @@ module SolidLog
             app: "test-app"
           }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
-          assert_equal "accepted", JSON.parse(response.body)["status"]
-          assert_equal 1, JSON.parse(response.body)["count"]
+          assert_equal "accepted", json_response["status"]
+          assert_equal 1, json_response["count"]
           assert_equal 1, RawEntry.count
         end
 
@@ -41,24 +41,24 @@ module SolidLog
             }
           end
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
-          assert_equal 3, JSON.parse(response.body)["count"]
+          assert_equal 3, json_response["count"]
           assert_equal 3, RawEntry.count
         end
 
         test "POST /ingest without auth token returns 401" do
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: { "Content-Type" => "application/json" }
+          post "/api/v1/ingest",
+            payload.to_json,
+            { "CONTENT_TYPE" => "application/json" }
 
           assert_response :unauthorized
         end
@@ -66,25 +66,25 @@ module SolidLog
         test "POST /ingest with invalid token returns 401" do
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer invalid_token",
-              "Content-Type" => "application/json"
+          post "/api/v1/ingest",
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer invalid_token",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :unauthorized
         end
 
-        test "POST /ingest with invalid JSON returns 422" do
-          post api_v1_ingest_path,
-            params: "{invalid json",
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+        test "POST /ingest with invalid JSON returns 400" do
+          post "/api/v1/ingest",
+            "{invalid json",
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
-          assert_response :unprocessable_entity
+          assert_response :bad_request
         end
 
         test "POST /ingest updates token last_used_at" do
@@ -93,11 +93,11 @@ module SolidLog
 
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           token_record.reload
@@ -112,11 +112,11 @@ module SolidLog
             custom_field: "custom_value"
           }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           raw_entry = RawEntry.last
@@ -135,55 +135,55 @@ module SolidLog
             }
           end
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
-          assert_equal 100, JSON.parse(response.body)["count"]
+          assert_equal 100, json_response["count"]
           assert_equal 100, RawEntry.count
         end
 
         # Edge case tests
 
         test "POST /ingest with empty payload returns 400" do
-          post api_v1_ingest_path,
-            params: "",
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/ingest",
+            "",
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :bad_request
-          assert_equal "Empty payload", JSON.parse(response.body)["error"]
+          assert_equal "Empty payload", json_response["error"]
         end
 
         test "POST /ingest with empty array returns 400" do
-          post api_v1_ingest_path,
-            params: [].to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/ingest",
+            [].to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :bad_request
-          assert_equal "Empty payload", JSON.parse(response.body)["error"]
+          assert_equal "Empty payload", json_response["error"]
         end
 
         test "POST /ingest with empty object returns 400" do
           # Empty object {} is treated as empty payload
-          post api_v1_ingest_path,
-            params: {}.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/ingest",
+            {}.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :bad_request
-          assert_equal "Empty payload", JSON.parse(response.body)["error"]
+          assert_equal "Empty payload", json_response["error"]
         end
 
         test "POST /ingest at max batch size limit" do
@@ -192,15 +192,15 @@ module SolidLog
             { level: "info", message: "Log #{i}" }
           end
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
-          assert_equal max_size, JSON.parse(response.body)["count"]
+          assert_equal max_size, json_response["count"]
         end
 
         test "POST /ingest over max batch size returns 413" do
@@ -209,15 +209,15 @@ module SolidLog
             { level: "info", message: "Log #{i}" }
           end
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :payload_too_large
-          json = JSON.parse(response.body)
+          json = json_response
           assert_equal "Batch too large", json["error"]
           assert_equal max_size, json["max_size"]
           assert_equal max_size + 1, json["received"]
@@ -231,41 +231,41 @@ module SolidLog
             { level: "warn", message: "Line 3" }.to_json
           ].join("\n")
 
-          post api_v1_ingest_path,
-            params: ndjson,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/x-ndjson"
+          post "/api/v1/ingest",
+            ndjson,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/x-ndjson"
             }
 
           assert_response :accepted
-          assert_equal 3, JSON.parse(response.body)["count"]
+          assert_equal 3, json_response["count"]
           assert_equal 3, RawEntry.count
         end
 
         test "POST /ingest with malformed auth header (no Bearer prefix)" do
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => @token, # Missing "Bearer" prefix
-              "Content-Type" => "application/json"
+          post "/api/v1/ingest",
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => @token, # Missing "Bearer" prefix
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :unauthorized
-          assert_equal "Missing or invalid Authorization header", JSON.parse(response.body)["error"]
+          assert_equal "Missing or invalid Authorization header", json_response["error"]
         end
 
         test "POST /ingest with Bearer in different case" do
           payload = { level: "info", message: "test" }
 
           # "bearer" (lowercase) should work
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/ingest",
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
@@ -275,11 +275,11 @@ module SolidLog
         test "POST /ingest with whitespace in auth header" do
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "  Bearer   #{@token}  ",
-              "Content-Type" => "application/json"
+          post "/api/v1/ingest",
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "  Bearer   #{@token}  ",
+              "CONTENT_TYPE" => "application/json"
             }
 
           # Extra whitespace should be handled gracefully
@@ -295,11 +295,11 @@ module SolidLog
             app: "test"
           }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
@@ -314,11 +314,11 @@ module SolidLog
             message: "A" * 10_000 # 10KB message
           }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
@@ -330,16 +330,16 @@ module SolidLog
         test "POST /ingest without Content-Type header returns 400" do
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}"
-              # No Content-Type header - Rails won't parse the JSON body
+          post "/api/v1/ingest",
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}"
+              # No Content-Type header - Rack won.t parse the JSON body
             }
 
           # Without Content-Type, body isn't parsed correctly
           assert_response :bad_request
-          assert_equal "Empty payload", JSON.parse(response.body)["error"]
+          assert_equal "Empty payload", json_response["error"]
         end
 
         test "POST /ingest with null values in payload" do
@@ -352,11 +352,11 @@ module SolidLog
             custom_field: nil
           }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
@@ -374,11 +374,11 @@ module SolidLog
             path: "/api/test?param=value&other=123"
           }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
@@ -398,11 +398,11 @@ module SolidLog
             tags: ["api", "production", "critical"]
           }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :accepted
@@ -417,11 +417,11 @@ module SolidLog
 
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           time_after = Time.current
@@ -434,11 +434,11 @@ module SolidLog
         test "POST /ingest marks entry as unparsed" do
           payload = { level: "info", message: "test" }
 
-          post api_v1_ingest_path,
-            params: payload.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post '/api/v1/ingest',
+            payload.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           raw_entry = RawEntry.last

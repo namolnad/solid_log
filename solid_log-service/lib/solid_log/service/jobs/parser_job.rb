@@ -1,11 +1,9 @@
-require "action_cable" if defined?(Rails)
+require "action_cable"
 
 module SolidLog
-  class ParserJob < ApplicationJob
-    queue_as :default
-
+  class ParserJob
     # Process a batch of unparsed raw entries
-    def perform(batch_size: nil)
+    def self.perform(batch_size: nil)
       batch_size ||= SolidLog.configuration.parser_batch_size
 
       SolidLog.without_logging do
@@ -14,7 +12,7 @@ module SolidLog
 
         return if raw_entries.empty?
 
-        Rails.logger.info "SolidLog::ParserJob: Processing #{raw_entries.size} raw entries"
+        SolidLog::Service.logger.info "SolidLog::ParserJob: Processing #{raw_entries.size} raw entries"
 
         # Process each entry
         entries_to_insert = []
@@ -51,8 +49,8 @@ module SolidLog
 
             entries_to_insert << entry_data
           rescue StandardError => e
-            Rails.logger.error "SolidLog::ParserJob: Failed to parse entry #{raw_entry.id}: #{e.message}"
-            Rails.logger.error e.backtrace.join("\n")
+            SolidLog::Service.logger.error "SolidLog::ParserJob: Failed to parse entry #{raw_entry.id}: #{e.message}"
+            SolidLog::Service.logger.error e.backtrace.join("\n")
             # Leave entry unparsed so it can be retried or investigated
           end
         end
@@ -62,7 +60,7 @@ module SolidLog
           raw_ids = entries_to_insert.map { |e| e[:raw_id] }
 
           Entry.insert_all(entries_to_insert)
-          Rails.logger.info "SolidLog::ParserJob: Inserted #{entries_to_insert.size} entries"
+          SolidLog::Service.logger.info "SolidLog::ParserJob: Inserted #{entries_to_insert.size} entries"
 
           # Broadcast new entry IDs for live tail
           begin
@@ -74,9 +72,9 @@ module SolidLog
               )
             end
           rescue NameError => e
-            Rails.logger.error "SolidLog::ParserJob: ActionCable not available: #{e.message}"
+            SolidLog::Service.logger.error "SolidLog::ParserJob: ActionCable not available: #{e.message}"
           rescue => e
-            Rails.logger.error "SolidLog::ParserJob: Failed to broadcast: #{e.class} - #{e.message}"
+            SolidLog::Service.logger.error "SolidLog::ParserJob: Failed to broadcast: #{e.class} - #{e.message}"
           end
         end
 
@@ -88,7 +86,7 @@ module SolidLog
     private
 
     # Track field occurrences for the registry
-    def track_fields(fields_hash, extra_fields)
+    def self.track_fields(fields_hash, extra_fields)
       extra_fields.each do |key, value|
         fields_hash[key] ||= { values: [], count: 0 }
         fields_hash[key][:count] += 1
@@ -97,7 +95,7 @@ module SolidLog
     end
 
     # Update the field registry with tracked fields
-    def update_field_registry(fields_hash)
+    def self.update_field_registry(fields_hash)
       fields_hash.each do |name, data|
         field = Field.find_or_initialize_by(name: name)
         field.field_type ||= data[:type]
@@ -108,7 +106,7 @@ module SolidLog
     end
 
     # Infer field type from value
-    def infer_field_type(value)
+    def self.infer_field_type(value)
       case value
       when String
         "string"

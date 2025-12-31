@@ -26,7 +26,7 @@ module SolidLog
       assert_equal 2, Entry.count
 
       # Run retention with 30 day policy
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Old entry should be deleted, recent entry preserved
       assert_nil Entry.find_by(id: old_entry.id)
@@ -54,7 +54,7 @@ module SolidLog
       assert_equal 2, Entry.count
 
       # Run retention: 30 days for regular, 90 days for errors
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Regular log deleted, error log preserved
       assert_nil Entry.find_by(id: old_info.id)
@@ -82,7 +82,7 @@ module SolidLog
       assert_equal 2, Entry.count
 
       # Run retention with 90 day error policy
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Very old error deleted, old error within retention preserved
       assert_nil Entry.find_by(id: very_old_error.id)
@@ -108,7 +108,7 @@ module SolidLog
       )
 
       # Run retention: 30 days for regular, 90 days for errors/fatal
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Both error and fatal should be preserved
       assert_not_nil Entry.find_by(id: old_fatal.id)
@@ -135,7 +135,7 @@ module SolidLog
       assert_equal 5, Entry.count
 
       # Run retention
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Verify expected deletions
       entries.each do |entry, should_delete|
@@ -217,7 +217,7 @@ module SolidLog
       assert_equal 3, RawEntry.count
 
       # Run retention
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Entry's raw should remain, orphaned should be deleted, unparsed should remain
       assert_not_nil RawEntry.find_by(id: entry_with_raw.raw_id)
@@ -244,7 +244,7 @@ module SolidLog
       assert_equal 2, FacetCache.count
 
       # Run retention
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Expired deleted, valid preserved
       assert_nil FacetCache.find_by(id: expired_cache.id)
@@ -258,14 +258,14 @@ module SolidLog
 
       # Run retention with vacuum
       assert_nothing_raised do
-        RetentionJob.perform_now(retention_days: 30, error_retention_days: 90, vacuum: true)
+        RetentionJob.perform(retention_days: 30, error_retention_days: 90, vacuum: true)
       end
     end
 
     test "vacuum parameter is optional and defaults to false" do
       # Should work without vacuum parameter
       assert_nothing_raised do
-        RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+        RetentionJob.perform(retention_days: 30, error_retention_days: 90)
       end
     end
 
@@ -280,7 +280,7 @@ module SolidLog
       end
 
       # Run job
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Should be silenced during execution
       assert_equal true, silenced_during_job
@@ -296,7 +296,7 @@ module SolidLog
 
       # Should not raise error
       assert_nothing_raised do
-        RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+        RetentionJob.perform(retention_days: 30, error_retention_days: 90)
       end
     end
 
@@ -310,11 +310,11 @@ module SolidLog
       )
 
       # Run with 60 day retention - should preserve
-      RetentionJob.perform_now(retention_days: 60, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 60, error_retention_days: 90)
       assert_not_nil Entry.find_by(id: old_entry.id)
 
       # Run with 40 day retention - should delete
-      RetentionJob.perform_now(retention_days: 40, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 40, error_retention_days: 90)
       assert_nil Entry.find_by(id: old_entry.id)
     end
 
@@ -335,7 +335,7 @@ module SolidLog
       )
 
       # Run with explicit parameters (should override config)
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # Entry should be preserved (30 day retention)
       assert_not_nil Entry.find_by(id: old_entry.id)
@@ -360,7 +360,7 @@ module SolidLog
       assert_equal 5, Entry.count
 
       # Run retention
-      RetentionJob.perform_now(retention_days: 30, error_retention_days: 90)
+      RetentionJob.perform(retention_days: 30, error_retention_days: 90)
 
       # All recent entries should be preserved
       entries.each do |entry|

@@ -36,7 +36,7 @@ module SolidLog
 
           # Only auto-promote fields with high priority
           if candidate[:priority] >= 80
-            Rails.logger.info "FieldAnalyzer: Auto-promoting field '#{field.name}' (usage: #{field.usage_count}, priority: #{candidate[:priority]})"
+            SolidLog.logger.info "FieldAnalyzer: Auto-promoting field '#{field.name}' (usage: #{field.usage_count}, priority: #{candidate[:priority]})"
 
             field.promote!
             promoted_count += 1

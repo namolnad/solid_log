@@ -1,0 +1,80 @@
+name: Build and Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/solid_log-service
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        db_adapter: [sqlite, postgres, mysql]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch,suffix=-${{ matrix.db_adapter }}
+            type=ref,event=pr,suffix=-${{ matrix.db_adapter }}
+            type=semver,pattern={{version}},suffix=-${{ matrix.db_adapter }}
+            type=semver,pattern={{major}}.{{minor}},suffix=-${{ matrix.db_adapter }}
+            type=semver,pattern={{major}},suffix=-${{ matrix.db_adapter }}
+            type=sha,prefix={{branch}}-,suffix=-${{ matrix.db_adapter }}
+            type=raw,value=latest-${{ matrix.db_adapter }},enable={{is_default_branch}}
+          flavor: |
+            latest=false
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            DB_ADAPTER=${{ matrix.db_adapter }}
+          cache-from: type=gha,scope=${{ matrix.db_adapter }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.db_adapter }}
+          platforms: linux/amd64,linux/arm64
+
+      - name: Generate artifact attestation
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

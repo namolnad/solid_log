@@ -1,33 +1,35 @@
-# Configure Rails Environment
-ENV["RAILS_ENV"] = "test"
+ENV["RACK_ENV"] = "test"
+ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
 
 require "bundler/setup"
-
-require "combustion"
-
-# Initialize Combustion (loads minimal Rails app from test/internal)
-# This will load Rails, ActiveRecord, etc.
-# Combustion looks for test/internal relative to the gem root
-Combustion.path = "test/internal"
-Combustion.initialize! :active_record, :action_controller, :active_job,
-  load_schema: false do  # Disable automatic schema loading - we'll do it manually
-  config.logger = Logger.new(nil) # Suppress logs during tests
-  config.log_level = :fatal
-end
-
-# Manually load schema using execute_batch for SQLite multi-statement support
-structure_sql = File.read(Rails.root.join("db", "structure.sql"))
-ActiveRecord::Base.connection.raw_connection.execute_batch(structure_sql)
-
 require "minitest/autorun"
+require "rack/test"
 
-# Now require bundler dependencies (after Rails is loaded)
-Bundler.require(:default)
+# Load dependencies
+require "active_support"
+require "active_support/core_ext"
+require "active_record"
+require "logger"
+
+# Set up ActiveRecord database connection for tests
+ActiveRecord::Base.establish_connection(
+  adapter: "sqlite3",
+  database: ":memory:"
+)
+
+# Set up logger (suppress during tests)
+ActiveRecord::Base.logger = Logger.new(nil)
 
 # Load solid_log-core gem (includes models, migrations, parser)
 require "solid_log/core"
 
-# Schema is loaded by Combustion from test/internal/db/structure.sql
+# Load structure.sql to set up schema
+structure_sql_path = File.expand_path("internal/db/structure.sql", __dir__)
+structure_sql = File.read(structure_sql_path)
+ActiveRecord::Base.connection.raw_connection.execute_batch(structure_sql)
+
+# Configure SolidLog logger
+SolidLog.logger = Logger.new(nil)
 
 # Initialize SolidLog configuration
 SolidLog::Core.configure do |config|
@@ -35,6 +37,9 @@ SolidLog::Core.configure do |config|
   config.error_retention_days = 90
   config.parser_batch_size = 200
 end
+
+# Load solid_log-service
+require_relative "../lib/solid_log/service"
 
 # Load shared test helpers from core gem (using relative path in monorepo)
 require_relative "../../solid_log-core/test/support/test_helpers"
@@ -53,7 +58,36 @@ class ActiveSupport::TestCase
   end
 end
 
-# ActionController test case helpers
-class ActionDispatch::IntegrationTest
+# Rack::Test integration for endpoint tests
+class RackTestCase < ActiveSupport::TestCase
+  include Rack::Test::Methods
   include SolidLog::TestHelpers
+
+  def app
+    SolidLog::Service::RackApp.new
+  end
+
+  # Parse JSON response body
+  def json_response
+    JSON.parse(last_response.body)
+  end
+
+  # Helper to assert response status
+  def assert_response(expected_status, message = nil)
+    status_codes = {
+      success: 200,
+      ok: 200,
+      accepted: 202,
+      bad_request: 400,
+      unauthorized: 401,
+      not_found: 404,
+      unprocessable_entity: 422,
+      payload_too_large: 413,
+      service_unavailable: 503
+    }
+
+    expected_code = status_codes[expected_status] || expected_status
+    default_message = "Expected response to be #{expected_status} (#{expected_code}), but was #{last_response.status}. Body: #{last_response.body}"
+    assert_equal expected_code, last_response.status, message || default_message
+  end
 end

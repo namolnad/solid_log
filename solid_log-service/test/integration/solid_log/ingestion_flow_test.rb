@@ -1,10 +1,10 @@
 require "test_helper"
 
 module SolidLog
-  class IngestionFlowTest < ActionDispatch::IntegrationTest
-    include Service::Engine.routes.url_helpers
+  class IngestionFlowTest < RackTestCase
 
     setup do
+          ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
       @token_result = Token.generate!("Test API")
       @token = @token_result[:token]
     end
@@ -21,11 +21,11 @@ module SolidLog
         user_id: 42
       }
 
-      post api_v1_ingest_path,
-        params: payload.to_json,
-        headers: {
-          "Authorization" => "Bearer #{@token}",
-          "Content-Type" => "application/json"
+      post "/api/v1/ingest",
+        payload.to_json,
+        {
+          "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+          "CONTENT_TYPE" => "application/json"
         }
 
       assert_response :accepted
@@ -36,7 +36,7 @@ module SolidLog
       assert_not raw_entry.parsed?
 
       # Step 3: Parse the entry
-      ParserJob.perform_now
+      ParserJob.perform
 
       # Step 4: Verify parsed entry created
       assert_equal 1, Entry.count
@@ -71,17 +71,17 @@ module SolidLog
         }
       end
 
-      post api_v1_ingest_path,
-        params: payload.to_json,
-        headers: {
-          "Authorization" => "Bearer #{@token}",
-          "Content-Type" => "application/json"
+      post "/api/v1/ingest",
+        payload.to_json,
+        {
+          "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+          "CONTENT_TYPE" => "application/json"
         }
 
       assert_equal 10, RawEntry.count
 
       # Parse all entries
-      ParserJob.perform_now
+      ParserJob.perform
 
       # Verify all parsed
       assert_equal 10, Entry.count
@@ -101,16 +101,16 @@ module SolidLog
           request_id: request_id
         }
 
-        post api_v1_ingest_path,
-          params: payload.to_json,
-          headers: {
-            "Authorization" => "Bearer #{@token}",
-            "Content-Type" => "application/json"
+        post "/api/v1/ingest",
+          payload.to_json,
+          {
+            "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+            "CONTENT_TYPE" => "application/json"
           }
       end
 
       # Parse entries
-      ParserJob.perform_now
+      ParserJob.perform
 
       # Query correlation timeline
       timeline = Entry.by_request_id(request_id).order(timestamp: :asc)
@@ -140,7 +140,7 @@ module SolidLog
 
       # Parse all entries (process in batches until all done)
       while RawEntry.unparsed.any?
-        ParserJob.perform_now
+        ParserJob.perform
       end
 
       # Verify field tracked
@@ -168,11 +168,11 @@ module SolidLog
 
     test "error handling in parsing flow" do
       # Ingest invalid JSON timestamp
-      post api_v1_ingest_path,
-        params: '{"timestamp": "invalid", "level": "info"}',
-        headers: {
-          "Authorization" => "Bearer #{@token}",
-          "Content-Type" => "application/json"
+      post "/api/v1/ingest",
+        '{"timestamp": "invalid", "level": "info"}',
+        {
+          "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+          "CONTENT_TYPE" => "application/json"
         }
 
       assert_response :accepted
@@ -180,7 +180,7 @@ module SolidLog
 
       # Parse should handle gracefully
       assert_nothing_raised do
-        ParserJob.perform_now
+        ParserJob.perform
       end
 
       # Entry may or may not be created depending on parser error handling
@@ -197,11 +197,11 @@ module SolidLog
           message: "Concurrent log #{i}"
         }
 
-        post api_v1_ingest_path,
-          params: payload.to_json,
-          headers: {
-            "Authorization" => "Bearer #{@token}",
-            "Content-Type" => "application/json"
+        post "/api/v1/ingest",
+          payload.to_json,
+          {
+            "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+            "CONTENT_TYPE" => "application/json"
           }
 
         assert_response :accepted
@@ -222,12 +222,12 @@ module SolidLog
       end
 
       # First batch should process exactly 200
-      ParserJob.perform_now(batch_size: 200)
+      ParserJob.perform(batch_size: 200)
       assert_equal 200, Entry.count
       assert_equal 50, RawEntry.unparsed.count
 
       # Second batch should process remaining 50
-      ParserJob.perform_now(batch_size: 200)
+      ParserJob.perform(batch_size: 200)
       assert_equal 250, Entry.count
       assert_equal 0, RawEntry.unparsed.count
     end

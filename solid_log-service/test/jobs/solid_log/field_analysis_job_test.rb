@@ -23,7 +23,7 @@ module SolidLog
 
       # Run analysis job without auto-promote
       assert_nothing_raised do
-        FieldAnalysisJob.perform_now(auto_promote: false)
+        FieldAnalysisJob.perform(auto_promote: false)
       end
 
       # Fields should not be promoted (auto_promote: false)
@@ -41,7 +41,7 @@ module SolidLog
       )
 
       # Run analysis job with auto-promote
-      FieldAnalysisJob.perform_now(auto_promote: true)
+      FieldAnalysisJob.perform(auto_promote: true)
 
       # High-priority field should be promoted
       assert high_priority_field.reload.promoted
@@ -58,7 +58,7 @@ module SolidLog
       )
 
       # Run analysis job with auto-promote
-      FieldAnalysisJob.perform_now(auto_promote: true)
+      FieldAnalysisJob.perform(auto_promote: true)
 
       # Low-priority field should NOT be promoted
       assert_equal false, low_priority_field.reload.promoted
@@ -76,7 +76,7 @@ module SolidLog
 
       # Should not raise error
       assert_nothing_raised do
-        FieldAnalysisJob.perform_now
+        FieldAnalysisJob.perform
       end
     end
 
@@ -91,7 +91,7 @@ module SolidLog
       )
 
       # Run analysis
-      FieldAnalysisJob.perform_now(auto_promote: true)
+      FieldAnalysisJob.perform(auto_promote: true)
 
       # Should remain promoted (no duplicate promotion)
       assert promoted_field.reload.promoted
@@ -108,7 +108,7 @@ module SolidLog
       )
 
       # Run analysis (only considers fields seen within 30 days)
-      FieldAnalysisJob.perform_now(auto_promote: true)
+      FieldAnalysisJob.perform(auto_promote: true)
 
       # Stale field should NOT be promoted
       assert_equal false, stale_field.reload.promoted
@@ -133,7 +133,7 @@ module SolidLog
       )
 
       # Run analysis with auto-promote
-      FieldAnalysisJob.perform_now(auto_promote: true)
+      FieldAnalysisJob.perform(auto_promote: true)
 
       # Only high-priority field should be promoted
       assert high_field.reload.promoted
@@ -160,7 +160,7 @@ module SolidLog
       end
 
       # Run job
-      FieldAnalysisJob.perform_now
+      FieldAnalysisJob.perform
 
       # Should be silenced during execution
       assert_equal true, silenced_during_job
@@ -174,7 +174,7 @@ module SolidLog
 
       # Should not raise error
       assert_nothing_raised do
-        FieldAnalysisJob.perform_now
+        FieldAnalysisJob.perform
       end
     end
 
@@ -189,7 +189,7 @@ module SolidLog
       )
 
       # Run without auto_promote parameter (defaults to false)
-      FieldAnalysisJob.perform_now
+      FieldAnalysisJob.perform
 
       # Should NOT be promoted
       assert_equal false, high_priority_field.reload.promoted
@@ -271,7 +271,7 @@ module SolidLog
       # Run analysis
       # Should log only top 10 (based on job implementation)
       assert_nothing_raised do
-        FieldAnalysisJob.perform_now
+        FieldAnalysisJob.perform
       end
     end
 

@@ -26,7 +26,7 @@ module SolidLog
       assert_equal 2, FacetCache.valid.count
 
       # Run cleanup job
-      CacheCleanupJob.perform_now
+      CacheCleanupJob.perform
 
       # Expired entries should be deleted
       assert_equal 2, FacetCache.count
@@ -39,7 +39,7 @@ module SolidLog
 
       # Should not raise error
       assert_nothing_raised do
-        CacheCleanupJob.perform_now
+        CacheCleanupJob.perform
       end
 
       assert_equal 0, FacetCache.count
@@ -59,7 +59,7 @@ module SolidLog
       assert_equal 0, FacetCache.expired.count
 
       # Run cleanup job
-      CacheCleanupJob.perform_now
+      CacheCleanupJob.perform
 
       # All entries should remain
       assert_equal 3, FacetCache.count
@@ -83,7 +83,7 @@ module SolidLog
       end
 
       # Run job
-      CacheCleanupJob.perform_now
+      CacheCleanupJob.perform
 
       # Should be silenced during execution
       assert_equal true, silenced_during_job
@@ -117,7 +117,7 @@ module SolidLog
       assert_equal 3, FacetCache.count
 
       # Run cleanup
-      CacheCleanupJob.perform_now
+      CacheCleanupJob.perform
 
       # Only expired should be deleted
       assert_not_nil FacetCache.find_by(id: never_expires.id)
@@ -144,7 +144,7 @@ module SolidLog
       assert_equal 2, FacetCache.count
 
       # Run cleanup multiple times
-      3.times { CacheCleanupJob.perform_now }
+      3.times { CacheCleanupJob.perform }
 
       # Should still have only valid cache
       assert_equal 1, FacetCache.count
@@ -165,7 +165,7 @@ module SolidLog
       assert_equal 1, FacetCache.expired.count
 
       # Run cleanup
-      CacheCleanupJob.perform_now
+      CacheCleanupJob.perform
 
       # Should be deleted
       assert_nil FacetCache.find_by(id: just_expired.id)

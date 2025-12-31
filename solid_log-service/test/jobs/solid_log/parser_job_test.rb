@@ -26,7 +26,7 @@ module SolidLog
       assert_equal 0, Entry.count
 
       # Process batch
-      ParserJob.perform_now
+      ParserJob.perform
 
       # All entries should be parsed
       assert_equal 5, Entry.count
@@ -44,14 +44,14 @@ module SolidLog
       end
 
       # Process with batch_size=5
-      ParserJob.perform_now(batch_size: 5)
+      ParserJob.perform(batch_size: 5)
 
       # Only 5 should be parsed
       assert_equal 5, Entry.count
       assert_equal 5, RawEntry.unparsed.count
 
       # Process again
-      ParserJob.perform_now(batch_size: 5)
+      ParserJob.perform(batch_size: 5)
 
       # All should be parsed now
       assert_equal 10, Entry.count
@@ -72,7 +72,7 @@ module SolidLog
       end
 
       # Process without batch_size parameter - should use config
-      ParserJob.perform_now
+      ParserJob.perform
 
       # Only 3 should be parsed (configured batch size)
       assert_equal 3, Entry.count
@@ -102,7 +102,7 @@ module SolidLog
       assert_equal 0, Field.count
 
       # Parse entry
-      ParserJob.perform_now
+      ParserJob.perform
 
       # Fields should be tracked
       assert Field.exists?(name: "user_id")
@@ -135,7 +135,7 @@ module SolidLog
       end
 
       # Parse all entries
-      ParserJob.perform_now
+      ParserJob.perform
 
       # Field should have usage_count = 3
       user_id_field = Field.find_by(name: "user_id")
@@ -158,7 +158,7 @@ module SolidLog
         received_at: Time.current
       )
 
-      ParserJob.perform_now
+      ParserJob.perform
 
       assert_equal "string", Field.find_by(name: "string_field").field_type
       assert_equal "number", Field.find_by(name: "number_field").field_type
@@ -191,7 +191,7 @@ module SolidLog
 
       # Process all entries
       assert_nothing_raised do
-        ParserJob.perform_now
+        ParserJob.perform
       end
 
       # Valid entries should have Entry records created
@@ -230,7 +230,7 @@ module SolidLog
 
       # Process batch - should not crash despite error on entry 2
       assert_nothing_raised do
-        ParserJob.perform_now
+        ParserJob.perform
       end
 
       # Entry 1 and 3 should be parsed, entry 2 should remain unparsed
@@ -263,7 +263,7 @@ module SolidLog
         received_at: Time.current
       )
 
-      ParserJob.perform_now
+      ParserJob.perform
 
       entry = Entry.last
       assert_equal "error", entry.level
@@ -293,7 +293,7 @@ module SolidLog
 
       # Should not raise error
       assert_nothing_raised do
-        ParserJob.perform_now
+        ParserJob.perform
       end
 
       assert_equal 0, Entry.count
@@ -317,7 +317,7 @@ module SolidLog
       end
 
       # Run job
-      ParserJob.perform_now
+      ParserJob.perform
 
       # SolidLog should be silenced during job execution
       assert_equal true, silenced_during_job
@@ -341,7 +341,7 @@ module SolidLog
 
       # Parse entry
       time_before = Time.current
-      ParserJob.perform_now
+      ParserJob.perform
 
       field = Field.find_by(name: "user_id")
       assert_not_nil field.last_seen_at
@@ -368,7 +368,7 @@ module SolidLog
         received_at: Time.current
       )
 
-      ParserJob.perform_now
+      ParserJob.perform
 
       # Field type should remain unchanged (preserves existing)
       field = Field.find_by(name: "user_id")
@@ -384,7 +384,7 @@ module SolidLog
       )
 
       time_before_parsing = Time.current
-      ParserJob.perform_now
+      ParserJob.perform
       time_after_parsing = Time.current
 
       entry = Entry.last
@@ -408,15 +408,15 @@ module SolidLog
       end
 
       # Process in batches of 10
-      ParserJob.perform_now(batch_size: 10)
+      ParserJob.perform(batch_size: 10)
       assert_equal 10, Entry.count
       assert_equal 15, RawEntry.unparsed.count
 
-      ParserJob.perform_now(batch_size: 10)
+      ParserJob.perform(batch_size: 10)
       assert_equal 20, Entry.count
       assert_equal 5, RawEntry.unparsed.count
 
-      ParserJob.perform_now(batch_size: 10)
+      ParserJob.perform(batch_size: 10)
       assert_equal 25, Entry.count
       assert_equal 0, RawEntry.unparsed.count
     end

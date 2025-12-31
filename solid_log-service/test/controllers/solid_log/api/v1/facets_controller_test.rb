@@ -3,10 +3,10 @@ require "test_helper"
 module SolidLog
   module Api
     module V1
-      class FacetsControllerTest < ActionDispatch::IntegrationTest
-        include Service::Engine.routes.url_helpers
+      class FacetsControllerTest < RackTestCase
 
         setup do
+          ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
           @token_result = Token.generate!("Test API")
           @token = @token_result[:token]
 
@@ -18,11 +18,11 @@ module SolidLog
         end
 
         test "GET /facets with field parameter returns facet values" do
-          get api_v1_facets_path(field: "level"),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/facets?field=level", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json, "field"
           assert_includes json, "values"
@@ -31,29 +31,30 @@ module SolidLog
           assert_kind_of Array, json["values"]
         end
 
-        test "GET /facets without field parameter returns 400" do
-          get api_v1_facets_path,
-            headers: { "Authorization" => "Bearer #{@token}" }
+        test "GET /facets without field parameter returns all facets" do
+          get "/api/v1/facets", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
-          assert_response :bad_request
-          json = JSON.parse(response.body)
-          assert_equal "Field parameter required", json["error"]
+          assert_response :success
+          json = json_response
+          assert_includes json, "facets"
         end
 
-        test "GET /facets with empty field returns 400" do
-          get api_v1_facets_path(field: ""),
-            headers: { "Authorization" => "Bearer #{@token}" }
+        test "GET /facets with empty field returns all facets" do
+          get "/api/v1/facets?field=", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
-          assert_response :bad_request
-          assert_equal "Field parameter required", JSON.parse(response.body)["error"]
+          assert_response :success
+          json = json_response
+          assert_includes json, "facets"
         end
 
         test "GET /facets returns unique values for field" do
-          get api_v1_facets_path(field: "level"),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/facets?field=level", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           # Should have 3 unique levels: info, error, warn
           assert json["values"].size >= 3
@@ -61,21 +62,21 @@ module SolidLog
         end
 
         test "GET /facets respects limit parameter" do
-          get api_v1_facets_path(field: "level", limit: 2),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/facets?field=level&limit=2", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert json["values"].size <= 2
         end
 
         test "GET /facets defaults to limit 100" do
-          get api_v1_facets_path(field: "app"),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/facets?field=app", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           # Limit is enforced in service, not returned in response
           # Just verify structure is correct
@@ -83,11 +84,11 @@ module SolidLog
         end
 
         test "GET /facets/all returns all facets" do
-          get api_v1_all_facets_path,
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/facets", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json, "facets"
           facets = json["facets"]
@@ -108,13 +109,13 @@ module SolidLog
         end
 
         test "GET /facets requires authentication" do
-          get api_v1_facets_path(field: "level")
+          get "/api/v1/facets?field=level"
 
           assert_response :unauthorized
         end
 
         test "GET /facets/all requires authentication" do
-          get api_v1_all_facets_path
+          get "/api/v1/facets"
 
           assert_response :unauthorized
         end
@@ -123,11 +124,11 @@ module SolidLog
           fields = %w[level app env method status_code]
 
           fields.each do |field|
-            get api_v1_facets_path(field: field),
-              headers: { "Authorization" => "Bearer #{@token}" }
+            get "/api/v1/facets?field=#{field}", {},
+              { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
             assert_response :success, "Failed for field: #{field}"
-            json = JSON.parse(response.body)
+            json = json_response
             assert_equal field, json["field"]
             assert_kind_of Array, json["values"]
           end

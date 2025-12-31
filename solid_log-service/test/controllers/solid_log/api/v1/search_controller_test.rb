@@ -3,10 +3,10 @@ require "test_helper"
 module SolidLog
   module Api
     module V1
-      class SearchControllerTest < ActionDispatch::IntegrationTest
-        include Service::Engine.routes.url_helpers
+      class SearchControllerTest < RackTestCase
 
         setup do
+          ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
           @token_result = Token.generate!("Test API")
           @token = @token_result[:token]
 
@@ -17,15 +17,15 @@ module SolidLog
         end
 
         test "POST /search with query returns matching entries" do
-          post api_v1_search_path,
-            params: { q: "login" }.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/search",
+            { q: "login" }.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json, "entries"
           assert_includes json, "query"
@@ -33,90 +33,90 @@ module SolidLog
         end
 
         test "POST /search without query returns 400" do
-          post api_v1_search_path,
-            params: {}.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/search",
+            {}.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :bad_request
-          json = JSON.parse(response.body)
+          json = json_response
           assert_equal "Query parameter required", json["error"]
         end
 
         test "POST /search with empty query returns 400" do
-          post api_v1_search_path,
-            params: { q: "" }.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/search",
+            { q: "" }.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :bad_request
-          assert_equal "Query parameter required", JSON.parse(response.body)["error"]
+          assert_equal "Query parameter required", json_response["error"]
         end
 
         test "POST /search respects limit parameter" do
-          post api_v1_search_path,
-            params: { q: "user", limit: 1 }.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/search",
+            { q: "user", limit: 1 }.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert json["entries"].size <= 1
           assert_equal 1, json["limit"]
         end
 
         test "POST /search defaults to limit 100" do
-          post api_v1_search_path,
-            params: { q: "test" }.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/search",
+            { q: "test" }.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_equal 100, json["limit"]
         end
 
         test "POST /search requires authentication" do
-          post api_v1_search_path,
-            params: { q: "test" }.to_json,
-            headers: { "Content-Type" => "application/json" }
+          post "/api/v1/search",
+            { q: "test" }.to_json,
+            { "CONTENT_TYPE" => "application/json" }
 
           assert_response :unauthorized
         end
 
         test "POST /search accepts query parameter as alternative to q" do
-          post api_v1_search_path,
-            params: { query: "password" }.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/search",
+            { query: "password" }.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
           assert_equal "password", json["query"]
         end
 
         test "POST /search includes total count" do
-          post api_v1_search_path,
-            params: { q: "test" }.to_json,
-            headers: {
-              "Authorization" => "Bearer #{@token}",
-              "Content-Type" => "application/json"
+          post "/api/v1/search",
+            { q: "test" }.to_json,
+            {
+              "HTTP_AUTHORIZATION" => "Bearer #{@token}",
+              "CONTENT_TYPE" => "application/json"
             }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json, "total"
           assert_kind_of Integer, json["total"]

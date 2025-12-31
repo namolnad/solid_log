@@ -3,15 +3,14 @@ require "test_helper"
 module SolidLog
   module Api
     module V1
-      class HealthControllerTest < ActionDispatch::IntegrationTest
-        include Service::Engine.routes.url_helpers
+      class HealthControllerTest < RackTestCase
 
         test "GET /health returns health metrics without authentication" do
           # Health endpoint should not require authentication
-          get api_v1_health_path
+          get "/api/v1/health"
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json, "status"
           assert_includes json, "timestamp"
@@ -21,12 +20,12 @@ module SolidLog
         test "GET /health returns ok status when healthy" do
           # Create and parse some entries to ensure system is healthy (no backlog)
           create_raw_entry
-          ParserJob.perform_now
+          ParserJob.perform
 
-          get api_v1_health_path
+          get "/api/v1/health"
 
           assert_response :ok
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes ["healthy", "ok", "warning", "degraded"], json["status"]
         end
@@ -42,9 +41,9 @@ module SolidLog
             )
           end
 
-          get api_v1_health_path
+          get "/api/v1/health"
 
-          json = JSON.parse(response.body)
+          json = json_response
 
           # Should still return a response even if critical
           assert_includes json, "status"
@@ -57,9 +56,9 @@ module SolidLog
         end
 
         test "GET /health includes parsing metrics" do
-          get api_v1_health_path
+          get "/api/v1/health"
 
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json["metrics"], "parsing"
 
@@ -69,9 +68,9 @@ module SolidLog
         end
 
         test "GET /health includes storage metrics" do
-          get api_v1_health_path
+          get "/api/v1/health"
 
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json["metrics"], "storage"
 
@@ -81,9 +80,9 @@ module SolidLog
         end
 
         test "GET /health timestamp is in ISO8601 format" do
-          get api_v1_health_path
+          get "/api/v1/health"
 
-          json = JSON.parse(response.body)
+          json = json_response
           timestamp = json["timestamp"]
 
           # Should be parseable as ISO8601
@@ -94,10 +93,10 @@ module SolidLog
 
         test "GET /health works when database is empty" do
           # Ensure we can get health even with no data
-          get api_v1_health_path
+          get "/api/v1/health"
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_equal 0, json["metrics"]["storage"]["total_entries"]
         end

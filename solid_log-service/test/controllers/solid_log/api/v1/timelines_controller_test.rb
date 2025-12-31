@@ -3,10 +3,10 @@ require "test_helper"
 module SolidLog
   module Api
     module V1
-      class TimelinesControllerTest < ActionDispatch::IntegrationTest
-        include Service::Engine.routes.url_helpers
+      class TimelinesControllerTest < RackTestCase
 
         setup do
+          ENV["SOLIDLOG_SECRET_KEY"] ||= "test-secret-key-for-tests"
           @token_result = Token.generate!("Test API")
           @token = @token_result[:token]
 
@@ -53,11 +53,11 @@ module SolidLog
         end
 
         test "GET /timelines/request/:request_id returns request timeline" do
-          get api_v1_timeline_request_path(request_id: @request_id),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/request/#{@request_id}", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json, "request_id"
           assert_includes json, "entries"
@@ -67,11 +67,11 @@ module SolidLog
         end
 
         test "GET /timelines/request/:request_id returns entries in chronological order" do
-          get api_v1_timeline_request_path(request_id: @request_id),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/request/#{@request_id}", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           entries = json["entries"]
           assert_equal "Request started", entries[0]["message"]
@@ -80,40 +80,40 @@ module SolidLog
         end
 
         test "GET /timelines/request/:request_id without request_id returns 404" do
-          get api_v1_timeline_request_path(request_id: ""),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/request/", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           # Empty string doesn't match route pattern, so Rails returns 404
           assert_response :not_found
         end
 
         test "GET /timelines/request/:request_id with non-existent ID returns empty entries" do
-          get api_v1_timeline_request_path(request_id: "non-existent"),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/request/non-existent", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_equal "non-existent", json["request_id"]
           assert_equal [], json["entries"]
         end
 
         test "GET /timelines/request/:request_id includes stats" do
-          get api_v1_timeline_request_path(request_id: @request_id),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/request/#{@request_id}", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_kind_of Hash, json["stats"]
         end
 
         test "GET /timelines/job/:job_id returns job timeline" do
-          get api_v1_timeline_job_path(job_id: @job_id),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/job/#{@job_id}", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_includes json, "job_id"
           assert_includes json, "entries"
@@ -123,11 +123,11 @@ module SolidLog
         end
 
         test "GET /timelines/job/:job_id returns entries in chronological order" do
-          get api_v1_timeline_job_path(job_id: @job_id),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/job/#{@job_id}", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           entries = json["entries"]
           assert_equal "Job started", entries[0]["message"]
@@ -135,42 +135,42 @@ module SolidLog
         end
 
         test "GET /timelines/job/:job_id without job_id returns 404" do
-          get api_v1_timeline_job_path(job_id: ""),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/job/", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           # Empty string doesn't match route pattern, so Rails returns 404
           assert_response :not_found
         end
 
         test "GET /timelines/job/:job_id with non-existent ID returns empty entries" do
-          get api_v1_timeline_job_path(job_id: "non-existent"),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/job/non-existent", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           assert_equal "non-existent", json["job_id"]
           assert_equal [], json["entries"]
         end
 
         test "GET /timelines/request requires authentication" do
-          get api_v1_timeline_request_path(request_id: @request_id)
+          get "/api/v1/timeline/request/#{@request_id}"
 
           assert_response :unauthorized
         end
 
         test "GET /timelines/job requires authentication" do
-          get api_v1_timeline_job_path(job_id: @job_id)
+          get "/api/v1/timeline/job/#{@job_id}"
 
           assert_response :unauthorized
         end
 
         test "GET /timelines/request/:request_id includes extra_fields" do
-          get api_v1_timeline_request_path(request_id: @request_id),
-            headers: { "Authorization" => "Bearer #{@token}" }
+          get "/api/v1/timeline/request/#{@request_id}", {},
+            { "HTTP_AUTHORIZATION" => "Bearer #{@token}" }
 
           assert_response :success
-          json = JSON.parse(response.body)
+          json = json_response
 
           # entries should include extra_fields_hash via as_json
           json["entries"].each do |entry|

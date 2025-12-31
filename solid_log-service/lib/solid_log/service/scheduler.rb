@@ -20,7 +20,7 @@ module SolidLog
           @running = true
         end
 
-        Rails.logger.info "SolidLog::Service::Scheduler starting..."
+        SolidLog::Service.logger.info "SolidLog::Service::Scheduler starting..."
 
         # Parser job - frequent (configurable, default 10s)
         thread = Thread.new { parser_loop }
@@ -37,13 +37,13 @@ module SolidLog
         thread.abort_on_exception = true
         @threads << thread
 
-        Rails.logger.info "SolidLog::Service::Scheduler started with #{@threads.size} threads"
+        SolidLog::Service.logger.info "SolidLog::Service::Scheduler started with #{@threads.size} threads"
       end
 
       def stop
         return unless @running
 
-        Rails.logger.info "SolidLog::Service::Scheduler stopping..."
+        SolidLog::Service.logger.info "SolidLog::Service::Scheduler stopping..."
 
         @mutex.synchronize do
           @running = false
@@ -56,7 +56,7 @@ module SolidLog
         @threads.each { |t| t.kill if t.alive? }
         @threads.clear
 
-        Rails.logger.info "SolidLog::Service::Scheduler stopped"
+        SolidLog::Service.logger.info "SolidLog::Service::Scheduler stopped"
       end
 
       def running?
@@ -70,10 +70,10 @@ module SolidLog
           break unless @running
 
           begin
-            SolidLog::ParserJob.perform_now
+            SolidLog::ParserJob.perform
           rescue => e
-            Rails.logger.error "SolidLog::Scheduler: Parser job failed: #{e.message}"
-            Rails.logger.error e.backtrace.join("\n")
+            SolidLog::Service.logger.error "SolidLog::Scheduler: Parser job failed: #{e.message}"
+            SolidLog::Service.logger.error e.backtrace.join("\n")
           end
 
           sleep @config.parser_interval
@@ -85,10 +85,10 @@ module SolidLog
           break unless @running
 
           begin
-            SolidLog::CacheCleanupJob.perform_now
+            SolidLog::CacheCleanupJob.perform
           rescue => e
-            Rails.logger.error "SolidLog::Scheduler: Cache cleanup failed: #{e.message}"
-            Rails.logger.error e.backtrace.join("\n")
+            SolidLog::Service.logger.error "SolidLog::Scheduler: Cache cleanup failed: #{e.message}"
+            SolidLog::Service.logger.error e.backtrace.join("\n")
           end
 
           sleep @config.cache_cleanup_interval
@@ -122,22 +122,22 @@ module SolidLog
         case job_name
         when :retention
           begin
-            SolidLog::RetentionJob.perform_now(
+            SolidLog::RetentionJob.perform(
               retention_days: @config.retention_days,
               error_retention_days: @config.error_retention_days
             )
           rescue => e
-            Rails.logger.error "SolidLog::Scheduler: Retention job failed: #{e.message}"
-            Rails.logger.error e.backtrace.join("\n")
+            SolidLog::Service.logger.error "SolidLog::Scheduler: Retention job failed: #{e.message}"
+            SolidLog::Service.logger.error e.backtrace.join("\n")
           end
         when :field_analysis
           begin
-            SolidLog::FieldAnalysisJob.perform_now(
+            SolidLog::FieldAnalysisJob.perform(
               auto_promote: @config.auto_promote_fields
             )
           rescue => e
-            Rails.logger.error "SolidLog::Scheduler: Field analysis failed: #{e.message}"
-            Rails.logger.error e.backtrace.join("\n")
+            SolidLog::Service.logger.error "SolidLog::Scheduler: Field analysis failed: #{e.message}"
+            SolidLog::Service.logger.error e.backtrace.join("\n")
           end
         end
       end

@@ -36,11 +36,11 @@ module SolidLog
           @scheduler = Scheduler.new(configuration)
           @scheduler.start
 
-          Rails.logger.info "SolidLog::Service: Started built-in Scheduler"
-          Rails.logger.info "  Parser interval: #{configuration.parser_interval}s"
-          Rails.logger.info "  Cache cleanup interval: #{configuration.cache_cleanup_interval}s"
-          Rails.logger.info "  Retention hour: #{configuration.retention_hour}:00"
-          Rails.logger.info "  Field analysis hour: #{configuration.field_analysis_hour}:00"
+          SolidLog::Service.logger.info "SolidLog::Service: Started built-in Scheduler"
+          SolidLog::Service.logger.info "  Parser interval: #{configuration.parser_interval}s"
+          SolidLog::Service.logger.info "  Cache cleanup interval: #{configuration.cache_cleanup_interval}s"
+          SolidLog::Service.logger.info "  Retention hour: #{configuration.retention_hour}:00"
+          SolidLog::Service.logger.info "  Field analysis hour: #{configuration.field_analysis_hour}:00"
         end
 
         def stop_scheduler
@@ -61,20 +61,20 @@ module SolidLog
           #   class_name: 'SolidLog::ParserJob'
           # )
 
-          Rails.logger.info "SolidLog::Service: Using ActiveJob for background processing"
-          Rails.logger.info "  Make sure to configure recurring jobs in your host application"
+          SolidLog::Service.logger.info "SolidLog::Service: Using ActiveJob for background processing"
+          SolidLog::Service.logger.info "  Make sure to configure recurring jobs in your host application"
         end
 
         def setup_manual
           # User manages scheduling via cron or other external scheduler
           # No setup needed
 
-          Rails.logger.info "SolidLog::Service: Manual job mode (no auto-scheduling)"
-          Rails.logger.info "  Set up cron jobs to run:"
-          Rails.logger.info "    - rails solid_log:parse_logs (every 10 seconds recommended)"
-          Rails.logger.info "    - rails solid_log:cache_cleanup (hourly recommended)"
-          Rails.logger.info "    - rails solid_log:retention (daily recommended)"
-          Rails.logger.info "    - rails solid_log:field_analysis (daily recommended)"
+          SolidLog::Service.logger.info "SolidLog::Service: Manual job mode (no auto-scheduling)"
+          SolidLog::Service.logger.info "  Set up cron jobs to run:"
+          SolidLog::Service.logger.info "    - rails solid_log:parse_logs (every 10 seconds recommended)"
+          SolidLog::Service.logger.info "    - rails solid_log:cache_cleanup (hourly recommended)"
+          SolidLog::Service.logger.info "    - rails solid_log:retention (daily recommended)"
+          SolidLog::Service.logger.info "    - rails solid_log:field_analysis (daily recommended)"
         end
       end
     end

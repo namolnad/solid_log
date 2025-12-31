@@ -211,6 +211,7 @@ Puma::CLI.new([
 - **Less familiar**: Not standard Rails patterns
 - **Duplicate logic**: Need to reimplement controller helpers
 - **No ActiveJob integration**: Jobs run, but harder to integrate with host app's queue
+- **ActionCable integration**: Requires standalone setup (still works, just needs configuration)
 
 ## When to Use Each
 
@@ -250,3 +251,61 @@ gem 'solid_log-service-rack'
 ```
 
 Both would work identically from client perspective.
+
+## ActionCable with Rack (Live-Tailing Support)
+
+**Important**: ActionCable is **REQUIRED** for live-tailing functionality and works standalone with Rack.
+
+### Setup in Rack Version
+
+1. **Add dependency** to gemspec:
+```ruby
+spec.add_dependency "actioncable", "~> 8.0"
+```
+
+2. **Mount ActionCable** in `rack_app.rb`:
+```ruby
+# Add to router
+when ['GET', '/cable']
+  ActionCable.server.call(env)
+```
+
+3. **Configure in config.ru**:
+```ruby
+require 'action_cable/engine'
+
+# Load cable configuration
+cable_config = YAML.load_file('config/cable.yml')[ENV['RAILS_ENV'] || 'production']
+ActionCable.server.config.cable = cable_config
+ActionCable.server.config.logger = SolidLog::Service.logger
+```
+
+4. **Keep config/cable.yml**:
+```yaml
+production:
+  adapter: async  # or redis for multi-process
+```
+
+5. **Broadcasting remains unchanged**:
+```ruby
+# In parser job
+ActionCable.server.broadcast(
+  "solid_log_new_entries",
+  { entry_ids: new_entry_ids }
+)
+```
+
+### Memory Impact
+
+- ActionCable adds ~5-10MB to memory footprint
+- Total with Rack + ActionCable: ~15-25MB (still 60-70% savings vs Rails)
+- Without ActionCable: ~5-10MB
+
+### Testing ActionCable
+
+Ensure live-tailing works after conversion:
+```ruby
+# Test WebSocket connection
+ws = Faraday.new('ws://localhost:3001/cable')
+ws.get # Should upgrade to WebSocket
+```
