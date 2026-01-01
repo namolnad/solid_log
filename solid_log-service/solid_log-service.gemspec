@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport", "~> 8.0"
   spec.add_dependency "activerecord", "~> 8.0"
   spec.add_dependency "actioncable", "~> 8.0"
-  spec.add_dependency "rack-cors", "~> 2.0"
+  spec.add_dependency "rack-cors", ">= 2", "< 4"
 
   # Development dependencies
   spec.add_development_dependency "sqlite3", ">= 2.1"
