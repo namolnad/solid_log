@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
     Dir["{app,config,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
   end
 
-  spec.add_dependency "solid_log-core", "~> 0.1.0"
+  spec.add_dependency "solid_log-core", SolidLog::Core::VERSION
   spec.add_dependency "rails", ">= 8.0.2"
   spec.add_dependency "importmap-rails"
   spec.add_dependency "turbo-rails"
