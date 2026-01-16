@@ -37,7 +37,7 @@ module SolidLog
             return stats if raw_entries.empty?
 
             # Log to STDERR to avoid recursion (only in debug mode)
-            $stderr.puts "[SolidLog::BatchParsingService] Processing #{raw_entries.size} raw entries" if ENV['SOLIDLOG_DEBUG']
+            $stderr.puts "[SolidLog::BatchParsingService] Processing #{raw_entries.size} raw entries" if ENV["SOLIDLOG_DEBUG"]
 
             # Get promoted fields cache (for performance)
             promoted_fields = get_promoted_fields_cache
@@ -95,7 +95,7 @@ module SolidLog
               Entry.insert_all(entries_to_insert)
               stats[:inserted] = entries_to_insert.size
               # Log to STDERR to avoid recursion (only in debug mode)
-              $stderr.puts "[SolidLog::BatchParsingService] Inserted #{entries_to_insert.size} entries" if ENV['SOLIDLOG_DEBUG']
+              $stderr.puts "[SolidLog::BatchParsingService] Inserted #{entries_to_insert.size} entries" if ENV["SOLIDLOG_DEBUG"]
 
               # Broadcast new entry IDs for live tail
               new_entry_ids = Entry.where(raw_id: raw_ids).pluck(:id)
@@ -240,7 +240,7 @@ module SolidLog
           end
         rescue StandardError => e
           # Silent failure - broadcasting is optional (log to STDERR to avoid recursion)
-          $stderr.puts "[SolidLog::BatchParsingService] Broadcast failed: #{e.message}" if ENV['SOLIDLOG_DEBUG']
+          $stderr.puts "[SolidLog::BatchParsingService] Broadcast failed: #{e.message}" if ENV["SOLIDLOG_DEBUG"]
         end
       end
     end

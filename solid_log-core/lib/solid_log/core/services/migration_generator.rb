@@ -155,6 +155,6 @@ module SolidLog
         end
       end
     end
-  end
+    end
   end
 end

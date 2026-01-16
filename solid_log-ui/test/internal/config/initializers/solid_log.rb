@@ -2,7 +2,7 @@
 
 SolidLog.configure do |config|
   # Use separate database for SolidLog (can also use main DB)
-  config.database_url = ENV['SOLIDLOG_DATABASE_URL'] || "sqlite3:#{Rails.root}/../../db/solid_log_test.sqlite3"
+  config.database_url = ENV["SOLIDLOG_DATABASE_URL"] || "sqlite3:#{Rails.root}/../../db/solid_log_test.sqlite3"
 
   # Enable inline parsing
   config.inline_parsing_enabled = true

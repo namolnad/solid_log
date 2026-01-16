@@ -83,17 +83,17 @@ module SolidLog
 
       # Wrap in without_logging to prevent ActionCable logs from being captured by SolidLog
       SolidLog.without_logging do
-        $stderr.puts "[LogStreamChannel] Received broadcast with #{entry_ids.size} entry IDs: #{entry_ids.first(5)}" if ENV['SOLIDLOG_DEBUG']
+        $stderr.puts "[LogStreamChannel] Received broadcast with #{entry_ids.size} entry IDs: #{entry_ids.first(5)}" if ENV["SOLIDLOG_DEBUG"]
 
         # Fetch entries matching these IDs
         entries = SolidLog::Entry.where(id: entry_ids).order(:id)
-        $stderr.puts "[LogStreamChannel] Found #{entries.size} entries in database" if ENV['SOLIDLOG_DEBUG']
+        $stderr.puts "[LogStreamChannel] Found #{entries.size} entries in database" if ENV["SOLIDLOG_DEBUG"]
 
         # Filter to only entries matching this client's filters
         transmitted_count = 0
         entries.each do |entry|
           matches = entry_matches_filters?(entry)
-          $stderr.puts "[LogStreamChannel] Entry #{entry.id} matches filters: #{matches}" if ENV['SOLIDLOG_DEBUG']
+          $stderr.puts "[LogStreamChannel] Entry #{entry.id} matches filters: #{matches}" if ENV["SOLIDLOG_DEBUG"]
           next unless matches
 
           # Render HTML for this specific entry with proper route context
@@ -108,7 +108,7 @@ module SolidLog
           transmitted_count += 1
         end
 
-        $stderr.puts "[LogStreamChannel] Transmitted #{transmitted_count} entries to client (filter: #{@filter_key})" if ENV['SOLIDLOG_DEBUG']
+        $stderr.puts "[LogStreamChannel] Transmitted #{transmitted_count} entries to client (filter: #{@filter_key})" if ENV["SOLIDLOG_DEBUG"]
       end
     end
 

@@ -142,6 +142,6 @@ module SolidLog
         SolidLog.logger&.info("Completed migration: #{filename}")
       end
     end
-  end
+    end
   end
 end

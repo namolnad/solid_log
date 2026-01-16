@@ -49,11 +49,11 @@ Puma::Plugin.create do
     # Check if we're not in a Rails console or runner
     # Console and runner set DISABLE_SPRING or have IRB/Runner in ARGV
     return false if defined?(Rails::Console)
-    return false if $PROGRAM_NAME.include?('rake')
-    return false if $PROGRAM_NAME.include?('runner')
-    return false if ARGV.include?('console')
-    return false if ARGV.include?('runner')
-    return false if ARGV.include?('c')
+    return false if $PROGRAM_NAME.include?("rake")
+    return false if $PROGRAM_NAME.include?("runner")
+    return false if ARGV.include?("console")
+    return false if ARGV.include?("runner")
+    return false if ARGV.include?("c")
 
     # If we made it here, we're likely in server mode
     true
@@ -89,7 +89,7 @@ Puma::Plugin.create do
         # Exponential backoff on error (max 60 seconds)
         # Prevents tight error loops
         backoff_time = [config.parse_interval * 2, 60].min
-        $stderr.puts "[SolidLog Puma Plugin] Backing off for #{backoff_time}s" if ENV['SOLIDLOG_DEBUG']
+        $stderr.puts "[SolidLog Puma Plugin] Backing off for #{backoff_time}s" if ENV["SOLIDLOG_DEBUG"]
         sleep backoff_time
       end
     end
@@ -137,15 +137,15 @@ Puma::Plugin.create do
         "solid_log_new_entries",
         { entry_ids: entry_ids }
       )
-      $stderr.puts "[SolidLog Puma Plugin] Broadcasted #{entry_ids.size} entries" if ENV['SOLIDLOG_DEBUG']
+      $stderr.puts "[SolidLog Puma Plugin] Broadcasted #{entry_ids.size} entries" if ENV["SOLIDLOG_DEBUG"]
     end
   rescue => e
     # Silent failure - broadcasting is optional
-    $stderr.puts "[SolidLog Puma Plugin] Broadcast failed: #{e.message}" if ENV['SOLIDLOG_DEBUG']
+    $stderr.puts "[SolidLog Puma Plugin] Broadcast failed: #{e.message}" if ENV["SOLIDLOG_DEBUG"]
   end
 
   # Log processing stats (directly to STDERR to avoid recursion)
   def log_stats(stats)
-    $stderr.puts "[SolidLog Puma Plugin] Processed #{stats[:processed]}, inserted #{stats[:inserted]}, errors #{stats[:errors]}" if ENV['SOLIDLOG_DEBUG']
+    $stderr.puts "[SolidLog Puma Plugin] Processed #{stats[:processed]}, inserted #{stats[:inserted]}, errors #{stats[:errors]}" if ENV["SOLIDLOG_DEBUG"]
   end
 end
