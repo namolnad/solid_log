@@ -1,4 +1,5 @@
 require_relative "lib/solid_log/service/version"
+require_relative "../solid_log-core/lib/solid_log/core/version"
 
 Gem::Specification.new do |spec|
   spec.name        = "solid_log-service"

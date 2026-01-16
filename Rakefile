@@ -32,6 +32,34 @@ namespace :test do
 end
 
 namespace :release do
+  desc "Bump version in all gems"
+  task :bump, [:version] do |t, args|
+    version = args[:version]
+    abort("Usage: rake release:bump[X.Y.Z]") unless version && version.match?(/^\d+\.\d+\.\d+$/)
+
+    puts "\n=== Bumping version to #{version} in all gems ==="
+
+    version_files = [
+      "solid_log-core/lib/solid_log/core/version.rb",
+      "solid_log-service/lib/solid_log/service/version.rb",
+      "solid_log-ui/lib/solid_log/ui/version.rb"
+    ]
+
+    version_files.each do |file|
+      content = File.read(file)
+      updated = content.gsub(/VERSION = "[\d\.]+"/, "VERSION = \"#{version}\"")
+      File.write(file, updated)
+      puts "✓ Updated #{file}"
+    end
+
+    puts "\n=== Version bumped to #{version} ==="
+    puts "\nNext steps:"
+    puts "1. Review changes: git diff"
+    puts "2. Run tests: rake test"
+    puts "3. Commit: git commit -am 'Bump version to #{version}'"
+    puts "4. Release: rake release:all"
+  end
+
   desc "Build all gems"
   task :build do
     puts "\n=== Building all gems ==="

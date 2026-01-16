@@ -1,7 +1,5 @@
-require "solid_log/core/version"
-
 module SolidLog
   module Service
-    VERSION = SolidLog::Core::VERSION
+    VERSION = "0.2.1"
   end
 end
