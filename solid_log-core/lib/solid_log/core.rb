@@ -31,6 +31,7 @@ require "solid_log/core/services/migration_runner"
 require "solid_log/core/services/batch_parsing_service"
 
 # Jobs
+require "solid_log/core/jobs/base_job"
 require "solid_log/core/jobs/parse_job"
 require "solid_log/core/jobs/retention_job"
 require "solid_log/core/jobs/cache_cleanup_job"
