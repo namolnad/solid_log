@@ -25,3 +25,6 @@ pidfile ENV.fetch("PIDFILE") { "tmp/pids/server.pid" }
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
+
+# SolidLog inline parsing plugin
+plugin :solid_log if ENV["SOLIDLOG_PUMA_PLUGIN_ENABLED"]

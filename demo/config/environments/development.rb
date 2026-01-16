@@ -24,8 +24,8 @@ Rails.application.configure do
   # Raise an error on page load if there are pending migrations
   config.active_record.migration_error = :page_load
 
-  # Highlight code that triggered database queries in logs
-  config.active_record.verbose_query_logs = true
+  # Disable verbose query logs to reduce noise (SolidLog logs everything anyway)
+  config.active_record.verbose_query_logs = false
 
   # Highlight code that enqueued background job in logs
   config.active_job.verbose_enqueue_logs = true
@@ -35,4 +35,43 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Configure Rails.logger to use SolidLog DirectLogger
+  # This makes ALL Rails logging go to SolidLog (no HTTP, no tokens needed)
+  config.logger = ActiveSupport::Logger.new(SolidLog::DirectLogger.new)
+
+  # Configure lograge to use the same logger
+  config.lograge.enabled = true
+  config.lograge.formatter = Lograge::Formatters::Json.new
+  config.lograge.logger = config.logger
+
+  # Ignore SolidLog's own requests and ActionCable events to prevent recursion/errors
+  config.lograge.ignore_custom = lambda do |event|
+    # Ignore all SolidLog controller requests
+    return true if event.payload[:controller]&.include?('SolidLog')
+
+    # Ignore ActionCable events (they have different payload structure)
+    return true if event.name&.include?('action_cable')
+
+    false
+  end
+
+  # Include useful request data (only for HTTP requests)
+  config.lograge.custom_options = lambda do |event|
+    # Skip for ActionCable events
+    return {} if event.name&.include?('action_cable')
+
+    headers = event.payload[:headers] || {}
+    {
+      app: 'demo-app',
+      env: Rails.env,
+      host: event.payload[:host],
+      remote_ip: event.payload[:remote_ip],
+      user_agent: headers['HTTP_USER_AGENT'],
+      request_id: headers['action_dispatch.request_id']
+    }
+  rescue => e
+    # If custom_options fails, return empty hash to avoid breaking lograge
+    {}
+  end
 end

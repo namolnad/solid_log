@@ -73,6 +73,9 @@
 
 <div class="card">
   <h2>Manual Actions</h2>
-  <%= link_to "Parse Logs Now", "#", class: "btn", onclick: "alert('This would trigger SolidLog::ParserJob.perform_now'); return false;" %>
-  <%= link_to "Clear All Logs", "#", class: "btn btn-danger", onclick: "if(confirm('Are you sure?')) { alert('This would delete all logs'); } return false;" %>
+  <%= button_to "Run Retention Now", run_retention_log_generator_index_path, method: :post, class: "btn" %>
+  <%= button_to "Clear All Logs", clear_logs_log_generator_index_path, method: :delete, class: "btn btn-danger", form: { onsubmit: "return confirm('Are you sure you want to delete all logs? This cannot be undone.');" } %>
+  <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+    Retention: keeps last 30 days (90 for errors), max 100k entries
+  </p>
 </div>

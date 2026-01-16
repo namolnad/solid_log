@@ -14,6 +14,8 @@ Rails.application.routes.draw do
       post :generate
       post :generate_batch
       post :trigger_job
+      delete :clear_logs
+      post :run_retention
     end
   end
 
