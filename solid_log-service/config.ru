@@ -41,6 +41,11 @@ ActionCable.server.config.logger = SolidLog::Service.logger
 config_file = File.join(__dir__, 'config', 'solid_log_service.rb')
 require config_file if File.exist?(config_file)
 
+# Run pending migrations (auto-migrate unless disabled)
+unless ENV['SKIP_AUTO_MIGRATE'] == 'true'
+  SolidLog::MigrationRunner.run_pending_migrations
+end
+
 # Start job processor
 SolidLog::Service.start!
 

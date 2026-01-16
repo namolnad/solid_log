@@ -81,32 +81,35 @@ module SolidLog
     def handle_new_entries(entry_ids)
       return if entry_ids.blank?
 
-      Rails.logger.info "[LogStreamChannel] Received broadcast with #{entry_ids.size} entry IDs: #{entry_ids.first(5)}"
+      # Wrap in without_logging to prevent ActionCable logs from being captured by SolidLog
+      SolidLog.without_logging do
+        $stderr.puts "[LogStreamChannel] Received broadcast with #{entry_ids.size} entry IDs: #{entry_ids.first(5)}" if ENV['SOLIDLOG_DEBUG']
 
-      # Fetch entries matching these IDs
-      entries = SolidLog::Entry.where(id: entry_ids).order(:id)
-      Rails.logger.info "[LogStreamChannel] Found #{entries.size} entries in database"
+        # Fetch entries matching these IDs
+        entries = SolidLog::Entry.where(id: entry_ids).order(:id)
+        $stderr.puts "[LogStreamChannel] Found #{entries.size} entries in database" if ENV['SOLIDLOG_DEBUG']
 
-      # Filter to only entries matching this client's filters
-      transmitted_count = 0
-      entries.each do |entry|
-        matches = entry_matches_filters?(entry)
-        Rails.logger.debug "[LogStreamChannel] Entry #{entry.id} matches filters: #{matches}"
-        next unless matches
+        # Filter to only entries matching this client's filters
+        transmitted_count = 0
+        entries.each do |entry|
+          matches = entry_matches_filters?(entry)
+          $stderr.puts "[LogStreamChannel] Entry #{entry.id} matches filters: #{matches}" if ENV['SOLIDLOG_DEBUG']
+          next unless matches
 
-        # Render HTML for this specific entry with proper route context
-        html = SolidLog::UI::BaseController.render(
-          partial: "solid_log/ui/streams/log_row",
-          locals: { entry: entry, query: nil },
-          layout: false
-        )
+          # Render HTML for this specific entry with proper route context
+          html = SolidLog::UI::BaseController.render(
+            partial: "solid_log/ui/streams/log_row",
+            locals: { entry: entry, query: nil },
+            layout: false
+          )
 
-        # Transmit to this specific client
-        transmit({ html: html, entry_id: entry.id })
-        transmitted_count += 1
+          # Transmit to this specific client
+          transmit({ html: html, entry_id: entry.id })
+          transmitted_count += 1
+        end
+
+        $stderr.puts "[LogStreamChannel] Transmitted #{transmitted_count} entries to client (filter: #{@filter_key})" if ENV['SOLIDLOG_DEBUG']
       end
-
-      Rails.logger.info "[LogStreamChannel] Transmitted #{transmitted_count} entries to client (filter: #{@filter_key})"
     end
 
     def entry_matches_filters?(entry)
