@@ -54,7 +54,7 @@ jobs:
             type=semver,pattern={{version}},suffix=-${{ matrix.db_adapter }}
             type=semver,pattern={{major}}.{{minor}},suffix=-${{ matrix.db_adapter }}
             type=semver,pattern={{major}},suffix=-${{ matrix.db_adapter }}
-            type=sha,prefix={{branch}}-,suffix=-${{ matrix.db_adapter }}
+            type=sha,prefix=,suffix=-${{ matrix.db_adapter }},enable=${{ github.ref_type == 'branch' }}
             type=raw,value=latest-${{ matrix.db_adapter }},enable={{is_default_branch}}
           flavor: |
             latest=false
