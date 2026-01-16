@@ -10,6 +10,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref (tag, branch, or commit) to build'
+        required: true
+        default: 'main'
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -31,6 +37,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -56,6 +64,7 @@ jobs:
             type=semver,pattern={{major}},suffix=-${{ matrix.db_adapter }}
             type=sha,prefix=,suffix=-${{ matrix.db_adapter }},enable=${{ github.ref_type == 'branch' }}
             type=raw,value=latest-${{ matrix.db_adapter }},enable={{is_default_branch}}
+            type=raw,value=${{ inputs.ref }}-${{ matrix.db_adapter }},enable=${{ github.event_name == 'workflow_dispatch' }}
           flavor: |
             latest=false
 
