@@ -1,4 +1,4 @@
-require_relative "../../../../solid_log-core/lib/solid_log/core/version"
+require "solid_log/core/version"
 
 module SolidLog
   module Service
