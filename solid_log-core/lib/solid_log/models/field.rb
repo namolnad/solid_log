@@ -25,8 +25,14 @@ module SolidLog
     end
 
     # Mark field as promoted (has its own column)
+    # Automatically generates a migration file to add the column
     def promote!
-      update!(promoted: true)
+      transaction do
+        update!(promoted: true)
+
+        # Generate migration file for this promotion
+        MigrationGenerator.generate_promotion_migration(self)
+      end
     end
 
     # Mark field as unpromoted (stored in JSON)
