@@ -11,6 +11,7 @@ Most Rails applications don't need expensive, complex logging infrastructure. So
 - **Zero external dependencies**: Everything runs in your Rails app
 - **Modular architecture**: Use only the components you need
 - **Database flexibility**: SQLite, PostgreSQL, or MySQL with adapter-specific optimizations
+- **Persistent storage**: Logs survive container restarts and deployments - all data lives in your database
 - **HTTP ingestion**: Send structured logs from any service via simple HTTP POST
 - **Full-text search**: Database-native FTS (SQLite FTS5, PostgreSQL tsvector, MySQL FULLTEXT)
 - **Request/job correlation**: Trace requests and background jobs across your system
@@ -354,6 +355,8 @@ Bug reports and pull requests are welcome on GitHub.
 See individual gem READMEs for gem-specific development notes.
 
 ## Deployment
+
+SolidLog stores all logs in your database, ensuring they persist across container restarts, deployments, and rollbacks. As long as your database persists (via volume mounts, managed database services, or SQLite volume persistence), your logs remain available.
 
 SolidLog offers flexible integration options for different scales and architectures:
 
