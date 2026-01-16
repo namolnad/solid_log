@@ -38,13 +38,13 @@ namespace :release do
 
     # Build in order: core first, then service and ui
     puts "\nBuilding solid_log-core..."
-    system("cd solid_log-core && gem build solid_log-core.gemspec") || abort("Failed to build solid_log-core")
+    system("cd solid_log-core && bundle exec gem build solid_log-core.gemspec") || abort("Failed to build solid_log-core")
 
     puts "\nBuilding solid_log-service..."
-    system("cd solid_log-service && gem build solid_log-service.gemspec") || abort("Failed to build solid_log-service")
+    system("cd solid_log-service && bundle exec gem build solid_log-service.gemspec") || abort("Failed to build solid_log-service")
 
     puts "\nBuilding solid_log-ui..."
-    system("cd solid_log-ui && gem build solid_log-ui.gemspec") || abort("Failed to build solid_log-ui")
+    system("cd solid_log-ui && bundle exec gem build solid_log-ui.gemspec") || abort("Failed to build solid_log-ui")
 
     puts "\n=== All gems built successfully! ==="
   end
