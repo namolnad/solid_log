@@ -37,31 +37,35 @@ solid_log/
 
 #### 1. solid_log-core
 
-**Foundation layer** - Database models, adapters, and core services
+**Foundation layer** - Database models, adapters, services, and background jobs
 
 - Database schema and migrations
 - ActiveRecord models (Entry, RawEntry, Token, Field, FacetCache)
 - Database adapters (SQLite, PostgreSQL, MySQL)
 - **DirectLogger**: High-performance, batched logging for parent app (50,000+ logs/sec)
 - Parser for structured JSON logs
-- Core services (SearchService, RetentionService, FieldAnalyzer, etc.)
+- Core services (SearchService, RetentionService, FieldAnalyzer, BatchParsingService, etc.)
+- **Background jobs** with conditional ActiveJob inheritance (ParseJob, RetentionJob, CacheCleanupJob, FieldAnalysisJob)
+- **Puma plugin** for inline parsing (no separate service needed)
+- Railtie for automatic log silencing
 - Anti-recursion prevention
 
-**Use this gem when:** Building custom logging integrations or using SolidLog without the UI
+**Use this gem when:** Building custom logging integrations, running inline processing, or using SolidLog without the UI
 
 [See solid_log-core README](solid_log-core/README.md)
 
 #### 2. solid_log-service
 
-**Service layer** - Background processing and API
+**Service layer** - HTTP ingestion API and standalone service runner
 
 - HTTP ingestion API with bearer token authentication
-- Background jobs (ParserJob, RetentionJob, CacheCleanupJob, FieldAnalysisJob)
-- Built-in scheduler (no external job queue required)
-- Batch processing with concurrency controls
+- Built-in scheduler for running core jobs
+- Standalone service process (no Rails needed)
 - Health check endpoints
 
-**Use this gem when:** Running a dedicated log ingestion service
+**Note:** Background jobs (ParseJob, RetentionJob, CacheCleanupJob, FieldAnalysisJob) are now in **solid_log-core** and work with any ActiveJob backend (Solid Queue, Sidekiq, etc.) or can run inline via Puma plugin.
+
+**Use this gem when:** Running a dedicated log ingestion service separate from your main app
 
 [See solid_log-service README](solid_log-service/README.md)
 
@@ -170,7 +174,7 @@ Quick overview:
 
 ## Architecture
 
-SolidLog uses a modular, three-gem architecture with a two-table storage pattern:
+SolidLog uses a modular, three-gem architecture with a two-table storage pattern and flexible processing options:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -181,14 +185,12 @@ SolidLog uses a modular, three-gem architecture with a two-table storage pattern
 │  └────────────────────┬─────────────────────────────┘  │
 │                       │                                 │
 │  ┌────────────────────▼─────────────────────────────┐  │
-│  │  solid_log-service (background workers)          │  │
-│  │  - HTTP API, Parser Jobs, Retention, Cleanup     │  │
-│  └────────────────────┬─────────────────────────────┘  │
-│                       │                                 │
-│  ┌────────────────────▼─────────────────────────────┐  │
-│  │  solid_log-core (models & services)              │  │
+│  │  solid_log-core (models, services, jobs)         │  │
 │  │  - Entry, RawEntry, Token, Field models          │  │
 │  │  - Database adapters, Parser, Services           │  │
+│  │  - Background Jobs (ParseJob, RetentionJob...)   │  │
+│  │  - Puma Plugin (inline processing option)        │  │
+│  │  - OR Solid Queue Jobs (scheduled processing)    │  │
 │  └────────────────────┬─────────────────────────────┘  │
 └────────────────────────┼──────────────────────────────┘
                          │
@@ -204,12 +206,25 @@ SolidLog uses a modular, three-gem architecture with a two-table storage pattern
               │ solid_log_tokens     │  ← API authentication
               │ solid_log_facet_cache│  ← Performance optimization
               └──────────────────────┘
+
+Optional: Separate Service for High Volume
+┌──────────────────────────────────────────┐
+│  solid_log-service (standalone process)  │
+│  - HTTP Ingestion API                    │
+│  - Built-in scheduler runs core jobs     │
+│  - No Rails/ActiveJob needed             │
+└──────────────┬───────────────────────────┘
+               │
+               └──> Same Log Database
 ```
 
 **Data Flow:**
-1. Logs arrive via HTTP POST → `solid_log_raw` (append-only, fast)
-2. Parser worker claims unparsed rows → processes JSON
-3. Parsed data inserted into `solid_log_entries` (indexed, queryable)
+1. Logs arrive via DirectLogger (parent app) or HTTP POST (external) → `solid_log_raw` (append-only, fast)
+2. **Processing options** (choose one):
+   - **Puma Plugin**: Background thread polls for unparsed logs (simplest)
+   - **Solid Queue**: Scheduled recurring job processes batches (scalable)
+   - **Service**: Dedicated process with HTTP API (maximum scale)
+3. Parser claims unparsed rows → processes JSON → inserts into `solid_log_entries`
 4. FTS triggers automatically sync full-text search index
 5. UI queries `solid_log_entries` with filters, search, correlation
 
@@ -218,7 +233,8 @@ SolidLog uses a modular, three-gem architecture with a two-table storage pattern
 - CPU-intensive parsing doesn't block writes
 - Audit trail preserved (raw entries never modified)
 - Optimized queries on parsed data
-- Independent scaling of components
+- Flexible processing (inline, scheduled, or dedicated service)
+- Jobs in core work with any ActiveJob backend
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design documentation.
 
@@ -339,26 +355,70 @@ See individual gem READMEs for gem-specific development notes.
 
 ## Deployment
 
-SolidLog can be deployed in several configurations:
+SolidLog offers flexible integration options for different scales and architectures:
 
-### Monolith (Recommended for Most Apps)
+### Option 1: Puma Plugin (Simplest - Recommended for Small Apps)
 
-Deploy all three gems together in your Rails app:
-- UI mounted at `/admin/logs`
-- Service layer runs as background jobs (via Solid Queue, Sidekiq, etc.)
-- Core provides models and services
+Run everything in your Rails app with inline processing:
+- Add `solid_log-core` + `solid_log-ui` to your Gemfile
+- Enable the Puma plugin for background parsing
+- No separate service or job queue needed
+- Background thread polls for unparsed logs every 10 seconds
 
-**Best for:** Small to medium apps, simple deployments
+**Setup:**
+```ruby
+# config/puma.rb
+plugin :solid_log if ENV["SOLIDLOG_PUMA_PLUGIN_ENABLED"]
 
-### Separated Service
+# config/initializers/solid_log.rb
+SolidLog.configure do |config|
+  config.inline_parsing_enabled = true
+  config.parse_interval = 10  # seconds
+  config.parser_batch_size = 200
+end
+```
 
-Deploy the service layer separately:
+**Best for:** Small to medium Rails apps (<1M logs/day), simple deployments, minimal infrastructure
+
+### Option 2: Solid Queue Jobs (Scalable - Recommended for Most Apps)
+
+Use Rails background jobs for processing:
+- Add `solid_log-core` + `solid_log-ui` to your Gemfile
+- Schedule jobs in `config/recurring.yml` (or use any ActiveJob backend)
+- Jobs scale with worker count
+- Works with Solid Queue, Sidekiq, Resque, etc.
+
+**Setup:**
+```yaml
+# config/recurring.yml
+production:
+  solidlog_parse:
+    class: SolidLog::Core::Jobs::ParseJob
+    schedule: every 10 seconds
+    args:
+      - batch_size: 200
+
+  solidlog_retention:
+    class: SolidLog::Core::Jobs::RetentionJob
+    schedule: every day at 2am
+    args:
+      - retention_days: 30
+      - error_retention_days: 90
+      - max_entries: 100000
+```
+
+**Best for:** Medium to large apps, existing job infrastructure, horizontal scaling
+
+### Option 3: Dedicated Service (Maximum Scale)
+
+Run a separate service process for high-volume ingestion:
 - Service app: `solid_log-core` + `solid_log-service` (ingestion + parsing)
 - Main app: `solid_log-core` + `solid_log-ui` (viewing only)
-- Service app exposes HTTP API for ingestion
+- Service exposes HTTP API for ingestion
+- Built-in scheduler (no Rails or ActiveJob needed in service)
 - Both apps connect to the same log database
 
-**Best for:** High-volume logging, scaling ingestion independently
+**Best for:** Very high volume (>10M logs/day), multiple apps, microservices, scaling ingestion independently
 
 ### Custom Integration
 
@@ -370,6 +430,7 @@ Use only `solid_log-core` for custom implementations:
 **Best for:** Advanced use cases, non-standard workflows
 
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for production deployment guides including:
+- Detailed setup for each integration option
 - Kamal configuration
 - Database tuning (SQLite WAL mode, PostgreSQL, MySQL)
 - Multi-process setup

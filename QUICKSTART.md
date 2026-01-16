@@ -38,20 +38,21 @@ bundle install
 
 Install only what you need:
 
-- **Core only**: For custom implementations
+- **Core only**: For custom implementations or building your own UI
   ```ruby
   gem "solid_log-core"
   ```
 
-- **Core + Service**: For ingestion without UI
+- **Core + UI** (Recommended): For most Rails apps with inline processing or Solid Queue
+  ```ruby
+  gem "solid_log-core"
+  gem "solid_log-ui"
+  ```
+
+- **Core + Service + UI**: For high-volume apps with dedicated ingestion service
   ```ruby
   gem "solid_log-core"
   gem "solid_log-service"
-  ```
-
-- **Core + UI**: For viewing existing logs
-  ```ruby
-  gem "solid_log-core"
   gem "solid_log-ui"
   ```
 
@@ -229,10 +230,15 @@ SolidLog.configure do |config|
   # Retention policies
   config.retention_days = 30              # Keep regular logs for 30 days
   config.error_retention_days = 90        # Keep errors for 90 days
+  config.max_entries = 100_000            # Optional: Max total entries (prevents unbounded growth)
 
   # Parsing & ingestion
   config.max_batch_size = 1000            # Max logs per batch insert
-  config.parser_concurrency = 5           # Parallel parser workers
+  config.parser_batch_size = 200          # Batch size for parsing jobs
+
+  # Inline processing (Puma plugin)
+  config.inline_parsing_enabled = false   # Set true to enable Puma plugin
+  config.parse_interval = 10              # Seconds between parse cycles
 
   # Performance
   config.facet_cache_ttl = 5.minutes      # Cache filter options for 5 min
@@ -353,89 +359,123 @@ Now refresh `http://localhost:3000/admin/logs/streams` - your log should appear!
 
 ## Step 11: Set Up Background Processing
 
-For production, you'll want logs parsed automatically. Choose one option:
+SolidLog offers three processing options. Choose the one that fits your architecture:
 
-### Option A: Cron Job (Simple)
+### Option A: Puma Plugin (Simplest - Recommended for Small Apps)
 
-Add to your crontab:
+Enable inline processing with a background thread in your Puma server:
 
-```cron
-# Parse logs every 5 minutes
-*/5 * * * * cd /path/to/app && bundle exec rails solid_log:parse_logs RAILS_ENV=production
+**1. Enable in config/puma.rb:**
+```ruby
+plugin :solid_log if ENV["SOLIDLOG_PUMA_PLUGIN_ENABLED"]
 ```
 
-### Option B: Background Job (Recommended)
-
-If you're using Solid Queue, Sidekiq, or another job backend:
-
+**2. Update config/initializers/solid_log.rb:**
 ```ruby
-# config/initializers/solid_log.rb (add to existing config)
-
-# Schedule parser job to run every 5 minutes
-if Rails.env.production?
-  Rails.application.config.after_initialize do
-    SolidLog::Service::ParserJob.set(wait: 5.minutes).perform_later
-  end
+SolidLog.configure do |config|
+  config.inline_parsing_enabled = true
+  config.parse_interval = 10          # Poll every 10 seconds
+  config.parser_batch_size = 200      # Process 200 entries per cycle
 end
 ```
 
-The job will automatically re-enqueue itself for continuous processing.
-
-### Option C: Systemd Service (Linux Servers)
-
-Create `/etc/systemd/system/solidlog-parser.service`:
-
-```ini
-[Unit]
-Description=SolidLog Parser Worker
-After=network.target
-
-[Service]
-Type=simple
-User=deploy
-WorkingDirectory=/var/www/myapp
-Environment="RAILS_ENV=production"
-
-ExecStart=/bin/bash -lc 'while true; do bundle exec rails solid_log:parse_logs; sleep 30; done'
-
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start:
-
+**3. Set environment variable:**
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable solidlog-parser
-sudo systemctl start solidlog-parser
+# .env or your deployment config
+SOLIDLOG_PUMA_PLUGIN_ENABLED=true
 ```
 
-## Step 12: Configure Retention Cleanup (Optional)
+**Benefits:**
+- Zero additional infrastructure
+- No job queue needed
+- Simple setup
+- Auto-starts with your web server
 
-To automatically delete old logs, add a daily cleanup job:
+**Best for:** Small to medium apps (<1M logs/day)
 
-### Cron
+### Option B: Solid Queue (Scalable - Recommended for Most Apps)
 
-```cron
-# Daily cleanup at 2 AM
-0 2 * * * cd /path/to/app && bundle exec rails solid_log:retention_vacuum[30] RAILS_ENV=production
+Use Rails background jobs with Solid Queue (or any ActiveJob backend):
+
+**1. Add to config/recurring.yml:**
+```yaml
+production:
+  # Parse unparsed logs every 10 seconds
+  solidlog_parse:
+    class: SolidLog::Core::Jobs::ParseJob
+    schedule: every 10 seconds
+    args:
+      - batch_size: 200
+
+  # Daily retention cleanup at 2 AM
+  solidlog_retention:
+    class: SolidLog::Core::Jobs::RetentionJob
+    schedule: every day at 2am
+    args:
+      - retention_days: 30
+      - error_retention_days: 90
+      - max_entries: 100000
+      - vacuum: true
+
+  # Hourly cache cleanup
+  solidlog_cache_cleanup:
+    class: SolidLog::Core::Jobs::CacheCleanupJob
+    schedule: every hour
+
+  # Daily field analysis (optional)
+  solidlog_field_analysis:
+    class: SolidLog::Core::Jobs::FieldAnalysisJob
+    schedule: every day at 3am
+    args:
+      - auto_promote: false
 ```
 
-### Background Job
+**Benefits:**
+- Scales with worker count
+- Works with any ActiveJob backend (Solid Queue, Sidekiq, Resque, etc.)
+- Reliable job processing
+- Built-in retry logic
 
+**Best for:** Medium to large apps, existing job infrastructure
+
+### Option C: Dedicated Service (Maximum Scale)
+
+Run a separate service process for high-volume ingestion:
+
+**1. Create service config:**
 ```ruby
-# config/initializers/solid_log.rb
-
-if Rails.env.production?
-  Rails.application.config.after_initialize do
-    # Schedule retention job daily at 2 AM
-    SolidLog::Service::RetentionJob.set(wait_until: Date.tomorrow.beginning_of_day + 2.hours).perform_later
-  end
+# service/config.rb
+SolidLog.configure do |config|
+  config.parser_batch_size = 500
+  config.retention_days = 30
+  config.error_retention_days = 90
+  config.max_entries = 1_000_000
 end
 ```
+
+**2. Start the service:**
+```bash
+bundle exec solidlog-service start --config service/config.rb
+```
+
+**Benefits:**
+- Dedicated resources for log processing
+- No impact on web server
+- Independent scaling
+- HTTP API for external services
+
+**Best for:** Very high volume (>10M logs/day), microservices
+
+## Step 12: You're Done!
+
+You now have a fully configured SolidLog installation. Logs will be automatically parsed based on your chosen processing option.
+
+**Quick Recap:**
+- ✅ Logs stored in dedicated database
+- ✅ UI mounted at `/admin/logs`
+- ✅ Background processing configured
+- ✅ Retention policies set
+- ✅ Ready to receive logs
 
 ## Next Steps
 

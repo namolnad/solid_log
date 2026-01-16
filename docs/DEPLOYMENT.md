@@ -148,22 +148,83 @@ Schedule periodic optimization:
 0 3 * * * cd /var/www/myapp && rails solid_log:optimize RAILS_ENV=production
 ```
 
-## Parser Workers
+## Background Processing
 
-SolidLog requires parser workers to process ingested logs.
+SolidLog requires background processing to parse ingested logs. Choose the option that best fits your architecture:
 
-### Option 1: Cron (Simple)
+### Option 1: Puma Plugin (Simplest - Recommended for Small Apps)
 
-```cron
-# /etc/cron.d/solidlog-parser
-# Run parser every 5 minutes
-*/5 * * * * deploy cd /var/www/myapp && /usr/local/bin/bundle exec rails solid_log:parse_logs RAILS_ENV=production >> /var/log/solidlog-parser.log 2>&1
+Enable inline processing with a background thread in your Puma server:
+
+```ruby
+# config/puma.rb
+plugin :solid_log if ENV["SOLIDLOG_PUMA_PLUGIN_ENABLED"]
+
+# config/initializers/solid_log.rb
+SolidLog.configure do |config|
+  config.inline_parsing_enabled = true
+  config.parse_interval = 10  # seconds
+  config.parser_batch_size = 200
+end
 ```
 
-**Pros:** Simple, no daemon management
-**Cons:** Fixed interval, not real-time
+**Pros:** Zero additional infrastructure, no job queue needed, auto-starts with web server
+**Cons:** Parsing shares resources with web server
+**Best for:** Small to medium apps (<1M logs/day)
 
-### Option 2: Systemd Service (Recommended)
+### Option 2: Solid Queue Jobs (Scalable - Recommended for Most Apps)
+
+Use Rails background jobs with scheduled recurring tasks:
+
+```yaml
+# config/recurring.yml
+production:
+  solidlog_parse:
+    class: SolidLog::Core::Jobs::ParseJob
+    schedule: every 10 seconds
+    args:
+      - batch_size: 200
+
+  solidlog_retention:
+    class: SolidLog::Core::Jobs::RetentionJob
+    schedule: every day at 2am
+    args:
+      - retention_days: 30
+      - error_retention_days: 90
+      - max_entries: 100000
+      - vacuum: true
+
+  solidlog_cache_cleanup:
+    class: SolidLog::Core::Jobs::CacheCleanupJob
+    schedule: every hour
+
+  solidlog_field_analysis:
+    class: SolidLog::Core::Jobs::FieldAnalysisJob
+    schedule: every day at 3am
+    args:
+      - auto_promote: false
+```
+
+**Pros:** Scales with worker count, reliable job processing, built-in retry logic
+**Cons:** Requires Solid Queue (or other ActiveJob backend)
+**Best for:** Medium to large apps with existing job infrastructure
+
+### Option 3: Dedicated Service (Maximum Scale)
+
+Run a separate solidlog-service process for high-volume ingestion:
+
+```bash
+# Service runs core jobs using built-in scheduler
+bundle exec solidlog-service start --config service/config.rb
+```
+
+**Pros:** Dedicated resources, no impact on web server, independent scaling, HTTP API for external services
+**Cons:** Additional infrastructure to manage
+**Best for:** Very high volume (>10M logs/day), microservices, multiple apps
+
+### Option 4: Systemd Service (Linux Servers)
+
+For traditional deployments without containers:
 
 ```ini
 # /etc/systemd/system/solidlog-parser.service
@@ -180,7 +241,7 @@ Environment="RAILS_ENV=production"
 Environment="BUNDLE_PATH=/var/www/myapp/vendor/bundle"
 
 # Run parser in loop with 30s sleep
-ExecStart=/bin/bash -lc 'while true; do bundle exec rails solid_log:parse_logs; sleep 30; done'
+ExecStart=/bin/bash -lc 'while true; do bundle exec rails runner "SolidLog::Core::Jobs::ParseJob.perform_now"; sleep 30; done'
 
 Restart=always
 RestartSec=10
@@ -204,35 +265,7 @@ sudo systemctl status solidlog-parser
 
 **Pros:** Auto-restart, log management, process supervision
 **Cons:** More complex setup
-
-### Option 3: Background Job (Most Flexible)
-
-Use your existing job backend (Solid Queue, Sidekiq, etc.):
-
-```ruby
-# config/initializers/solid_log.rb
-# Schedule parser job every 5 minutes
-if Rails.env.production?
-  SolidLog::ParserJob.set(wait: 5.minutes).perform_later
-end
-```
-
-In `ParserJob`:
-
-```ruby
-# app/jobs/solid_log/parser_job.rb
-def perform
-  SolidLog.without_logging do
-    process_batch
-  end
-
-  # Re-enqueue for continuous processing
-  self.class.set(wait: 5.minutes).perform_later
-end
-```
-
-**Pros:** Leverages existing infrastructure, easy scaling
-**Cons:** Couples to job backend
+**Best for:** Traditional server deployments without job infrastructure
 
 ### Multiple Workers
 
@@ -493,60 +526,105 @@ sudo systemctl start solidlog-retention.timer
 
 ## Background Jobs
 
-### Scheduled Jobs
+All background jobs now live in `solid_log-core` and can be used with any ActiveJob backend.
 
-Configure these jobs in your job backend:
+### Available Jobs
 
-**Parser Job** (every 5 minutes):
+**ParseJob** - Processes unparsed raw log entries:
 ```ruby
-SolidLog::ParserJob.perform_later
+SolidLog::Core::Jobs::ParseJob.perform_later(batch_size: 200)
 ```
 
-**Cache Cleanup** (every hour):
+**RetentionJob** - Cleans up old log entries based on retention policies:
 ```ruby
-SolidLog::CacheCleanupJob.perform_later
+SolidLog::Core::Jobs::RetentionJob.perform_later(
+  retention_days: 30,
+  error_retention_days: 90,
+  max_entries: 100_000,
+  vacuum: true
+)
 ```
 
-**Field Analysis** (daily):
+**CacheCleanupJob** - Removes expired facet cache entries:
 ```ruby
-SolidLog::FieldAnalysisJob.perform_later(auto_promote: true)
+SolidLog::Core::Jobs::CacheCleanupJob.perform_later
 ```
 
-**Retention** (daily at 2 AM):
+**FieldAnalysisJob** - Analyzes field usage and optionally auto-promotes fields:
 ```ruby
-SolidLog::RetentionJob.perform_later
+SolidLog::Core::Jobs::FieldAnalysisJob.perform_later(auto_promote: false)
 ```
 
 ### Solid Queue Example
 
+**Recommended approach** - Use `config/recurring.yml`:
+
+```yaml
+# config/recurring.yml
+production:
+  solidlog_parse:
+    class: SolidLog::Core::Jobs::ParseJob
+    schedule: every 10 seconds
+    args:
+      - batch_size: 200
+
+  solidlog_retention:
+    class: SolidLog::Core::Jobs::RetentionJob
+    schedule: every day at 2am
+    args:
+      - retention_days: 30
+      - error_retention_days: 90
+      - max_entries: 100000
+      - vacuum: true
+
+  solidlog_cache_cleanup:
+    class: SolidLog::Core::Jobs::CacheCleanupJob
+    schedule: every hour
+
+  solidlog_field_analysis:
+    class: SolidLog::Core::Jobs::FieldAnalysisJob
+    schedule: every day at 3am
+    args:
+      - auto_promote: false
+```
+
+**Alternative** - Programmatic scheduling:
+
 ```ruby
-# config/initializers/solid_queue.rb
+# config/initializers/solid_log.rb
 if Rails.env.production?
   Rails.application.config.after_initialize do
     # Schedule recurring jobs
     SolidQueue::RecurringTask.create_or_find_by!(
       key: 'solidlog_parser',
-      schedule: 'every 5 minutes',
-      job_class: 'SolidLog::ParserJob'
-    )
-
-    SolidQueue::RecurringTask.create_or_find_by!(
-      key: 'solidlog_cache_cleanup',
-      schedule: 'every hour',
-      job_class: 'SolidLog::CacheCleanupJob'
-    )
-
-    SolidQueue::RecurringTask.create_or_find_by!(
-      key: 'solidlog_field_analysis',
-      schedule: 'daily at 3am',
-      job_class: 'SolidLog::FieldAnalysisJob',
-      arguments: [{ auto_promote: true }]
+      schedule: 'every 10 seconds',
+      job_class: 'SolidLog::Core::Jobs::ParseJob',
+      arguments: [{ batch_size: 200 }]
     )
 
     SolidQueue::RecurringTask.create_or_find_by!(
       key: 'solidlog_retention',
       schedule: 'daily at 2am',
-      job_class: 'SolidLog::RetentionJob'
+      job_class: 'SolidLog::Core::Jobs::RetentionJob',
+      arguments: [{
+        retention_days: 30,
+        error_retention_days: 90,
+        max_entries: 100_000,
+        vacuum: true
+      }]
+    )
+
+    SolidQueue::RecurringTask.create_or_find_by!(
+      key: 'solidlog_cache_cleanup',
+      schedule: 'every hour',
+      job_class: 'SolidLog::Core::Jobs::CacheCleanupJob'
+    )
+
+    SolidQueue::RecurringTask.create_or_find_by!(
+      key: 'solidlog_field_analysis',
+      schedule: 'daily at 3am',
+      job_class: 'SolidLog::Core::Jobs::FieldAnalysisJob',
+      arguments: [{ auto_promote: false }]
     )
   end
 end
