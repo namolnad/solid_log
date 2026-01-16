@@ -58,7 +58,7 @@ module SolidLog
           # SolidQueue::RecurringTask.create!(
           #   key: 'solidlog_parser',
           #   schedule: 'every 10 seconds',
-          #   class_name: 'SolidLog::ParserJob'
+          #   class_name: 'SolidLog::Core::Jobs::ParseJob'
           # )
 
           SolidLog::Service.logger.info "SolidLog::Service: Using ActiveJob for background processing"

@@ -19,7 +19,7 @@ module SolidLog
         test "GET /health returns ok status when healthy" do
           # Create and parse some entries to ensure system is healthy (no backlog)
           create_raw_entry
-          ParserJob.perform
+          SolidLog::Core::Jobs::ParseJob.perform_now
 
           get "/api/v1/health"
 

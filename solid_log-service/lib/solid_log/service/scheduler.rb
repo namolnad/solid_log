@@ -70,7 +70,8 @@ module SolidLog
           break unless @running
 
           begin
-            SolidLog::ParserJob.perform
+            # Use core's ParseJob (works with or without ActiveJob)
+            SolidLog::Core::Jobs::ParseJob.perform_now(batch_size: @config.parser_batch_size)
           rescue => e
             SolidLog::Service.logger.error "SolidLog::Scheduler: Parser job failed: #{e.message}"
             SolidLog::Service.logger.error e.backtrace.join("\n")
@@ -85,7 +86,8 @@ module SolidLog
           break unless @running
 
           begin
-            SolidLog::CacheCleanupJob.perform
+            # Use core's CacheCleanupJob (works with or without ActiveJob)
+            SolidLog::Core::Jobs::CacheCleanupJob.perform_now
           rescue => e
             SolidLog::Service.logger.error "SolidLog::Scheduler: Cache cleanup failed: #{e.message}"
             SolidLog::Service.logger.error e.backtrace.join("\n")
@@ -122,9 +124,11 @@ module SolidLog
         case job_name
         when :retention
           begin
-            SolidLog::RetentionJob.perform(
+            # Use core's RetentionJob (works with or without ActiveJob)
+            SolidLog::Core::Jobs::RetentionJob.perform_now(
               retention_days: @config.retention_days,
-              error_retention_days: @config.error_retention_days
+              error_retention_days: @config.error_retention_days,
+              max_entries: SolidLog.configuration.max_entries
             )
           rescue => e
             SolidLog::Service.logger.error "SolidLog::Scheduler: Retention job failed: #{e.message}"
@@ -132,7 +136,8 @@ module SolidLog
           end
         when :field_analysis
           begin
-            SolidLog::FieldAnalysisJob.perform(
+            # Use core's FieldAnalysisJob (works with or without ActiveJob)
+            SolidLog::Core::Jobs::FieldAnalysisJob.perform_now(
               auto_promote: @config.auto_promote_fields
             )
           rescue => e

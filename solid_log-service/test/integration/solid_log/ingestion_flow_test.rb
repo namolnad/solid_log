@@ -35,7 +35,7 @@ module SolidLog
       assert_not raw_entry.parsed?
 
       # Step 3: Parse the entry
-      ParserJob.perform
+      SolidLog::Core::Jobs::ParseJob.perform_now
 
       # Step 4: Verify parsed entry created
       assert_equal 1, Entry.count
@@ -80,7 +80,7 @@ module SolidLog
       assert_equal 10, RawEntry.count
 
       # Parse all entries
-      ParserJob.perform
+      SolidLog::Core::Jobs::ParseJob.perform_now
 
       # Verify all parsed
       assert_equal 10, Entry.count
@@ -109,7 +109,7 @@ module SolidLog
       end
 
       # Parse entries
-      ParserJob.perform
+      SolidLog::Core::Jobs::ParseJob.perform_now
 
       # Query correlation timeline
       timeline = Entry.by_request_id(request_id).order(timestamp: :asc)
@@ -139,7 +139,7 @@ module SolidLog
 
       # Parse all entries (process in batches until all done)
       while RawEntry.unparsed.any?
-        ParserJob.perform
+        SolidLog::Core::Jobs::ParseJob.perform_now
       end
 
       # Verify field tracked
@@ -179,7 +179,7 @@ module SolidLog
 
       # Parse should handle gracefully
       assert_nothing_raised do
-        ParserJob.perform
+        SolidLog::Core::Jobs::ParseJob.perform_now
       end
 
       # Entry may or may not be created depending on parser error handling
@@ -221,12 +221,12 @@ module SolidLog
       end
 
       # First batch should process exactly 200
-      ParserJob.perform(batch_size: 200)
+      SolidLog::Core::Jobs::ParseJob.perform_now(batch_size: 200)
       assert_equal 200, Entry.count
       assert_equal 50, RawEntry.unparsed.count
 
       # Second batch should process remaining 50
-      ParserJob.perform(batch_size: 200)
+      SolidLog::Core::Jobs::ParseJob.perform_now(batch_size: 200)
       assert_equal 250, Entry.count
       assert_equal 0, RawEntry.unparsed.count
     end

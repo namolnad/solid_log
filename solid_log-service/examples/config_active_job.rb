@@ -25,29 +25,29 @@ end
 # For Solid Queue (config/recurring.yml):
 #
 # parser:
-#   class: SolidLog::ParserJob
+#   class: SolidLog::Core::Jobs::ParseJob
 #   schedule: every 10 seconds
 #   args: []
 #
 # cache_cleanup:
-#   class: SolidLog::CacheCleanupJob
+#   class: SolidLog::Core::Jobs::CacheCleanupJob
 #   schedule: every hour
 #   args: []
 #
 # retention:
-#   class: SolidLog::RetentionJob
+#   class: SolidLog::Core::Jobs::RetentionJob
 #   schedule: every day at 2am
-#   args: [{ retention_days: 30, error_retention_days: 90 }]
+#   args: [{ retention_days: 30, error_retention_days: 90, max_entries: 100000 }]
 #
 # field_analysis:
-#   class: SolidLog::FieldAnalysisJob
+#   class: SolidLog::Core::Jobs::FieldAnalysisJob
 #   schedule: every day at 3am
 #   args: [{ auto_promote: false }]
 
 # Or programmatically with Solid Queue:
 # if defined?(SolidQueue)
 #   SolidQueue::RecurringTask.find_or_create_by!(key: 'solidlog_parser') do |task|
-#     task.class_name = 'SolidLog::ParserJob'
+#     task.class_name = 'SolidLog::Core::Jobs::ParseJob'
 #     task.schedule = 'every 10 seconds'
 #   end
 #
