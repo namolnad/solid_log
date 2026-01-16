@@ -1,5 +1,5 @@
 module SolidLog
   module UI
-    VERSION = "0.1.0"
+    VERSION = SolidLog::Core::VERSION
   end
 end
