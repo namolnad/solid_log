@@ -1,9 +1,9 @@
 name: Build and Push Docker Images
 
 on:
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
   push:
-    branches:
-      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -47,7 +47,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if image already exists (scheduled builds only)
+        if: github.event_name == 'schedule'
+        id: check_image
+        run: |
+          # Get current commit SHA (short form)
+          CURRENT_SHA=$(git rev-parse --short HEAD)
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${CURRENT_SHA}-${{ matrix.db_adapter }}"
+
+          echo "Checking for existing image: $IMAGE_TAG"
+
+          # Try to inspect the image in the registry
+          if docker buildx imagetools inspect "$IMAGE_TAG" > /dev/null 2>&1; then
+            echo "Image already exists for commit $CURRENT_SHA. Skipping build."
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "Image does not exist for commit $CURRENT_SHA. Proceeding with build."
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Extract metadata
+        if: steps.check_image.outputs.skip != 'true'
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -64,6 +84,7 @@ jobs:
             latest=false
 
       - name: Build and push Docker image
+        if: steps.check_image.outputs.skip != 'true'
         id: push
         uses: docker/build-push-action@v5
         with:
@@ -78,6 +99,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
 
       - name: Generate artifact attestation
+        if: steps.check_image.outputs.skip != 'true'
         uses: actions/attest-build-provenance@v1
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
