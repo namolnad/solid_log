@@ -4,6 +4,9 @@ require "solid_log/core/client"
 require "solid_log/silence_middleware"
 require "logger"
 
+# Load Railtie if Rails is available
+require "solid_log/railtie" if defined?(Rails::Railtie)
+
 # Database adapters
 require "solid_log/adapters/base_adapter"
 require "solid_log/adapters/sqlite_adapter"
@@ -23,6 +26,15 @@ require "solid_log/core/services/field_analyzer"
 require "solid_log/core/services/search_service"
 require "solid_log/core/services/correlation_service"
 require "solid_log/core/services/health_service"
+require "solid_log/core/services/migration_generator"
+require "solid_log/core/services/migration_runner"
+require "solid_log/core/services/batch_parsing_service"
+
+# Jobs
+require "solid_log/core/jobs/parse_job"
+require "solid_log/core/jobs/retention_job"
+require "solid_log/core/jobs/cache_cleanup_job"
+require "solid_log/core/jobs/field_analysis_job"
 
 # Models (explicit requires - no engine, no app/ directory)
 require "solid_log/models/record"
@@ -125,4 +137,6 @@ module SolidLog
   SearchService = Core::SearchService
   CorrelationService = Core::CorrelationService
   HealthService = Core::HealthService
+  MigrationGenerator = Core::MigrationGenerator
+  MigrationRunner = Core::MigrationRunner
 end

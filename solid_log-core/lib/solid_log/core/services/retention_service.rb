@@ -2,7 +2,7 @@ module SolidLog
   module Core
     class RetentionService
       # Cleanup old entries based on retention policies
-      def self.cleanup(retention_days:, error_retention_days:)
+      def self.cleanup(retention_days:, error_retention_days:, max_entries: nil)
         stats = {
           entries_deleted: 0,
           raw_deleted: 0,
@@ -24,6 +24,17 @@ module SolidLog
           .where("timestamp < ?", error_threshold)
           .where(level: %w[error fatal])
           .delete_all
+
+        # Enforce max entries limit (delete oldest entries beyond limit)
+        if max_entries && max_entries > 0
+          current_count = Entry.count
+          if current_count > max_entries
+            delete_count = current_count - max_entries
+            oldest_ids = Entry.order(:timestamp).limit(delete_count).pluck(:id)
+            deleted = Entry.where(id: oldest_ids).delete_all
+            stats[:entries_deleted] += deleted
+          end
+        end
 
         # Delete corresponding raw entries (keep unparsed for investigation)
         raw_ids = Entry.pluck(:raw_id).compact
