@@ -126,20 +126,19 @@ module SolidLog
 
     test "prevents recursive logging" do
       # This test verifies anti-recursion protection
-      # Even if we try to log inside without_logging block, it should be silenced
+      # Logs written inside without_logging block should be silenced
 
       log_written = false
 
       SolidLog.without_logging do
-        @logger.write({ message: "Should be written" }.to_json)
+        @logger.write({ message: "Should be silenced" }.to_json)
         log_written = true
       end
 
       @logger.flush
 
-      assert log_written, "Logger should accept the write call"
-      # The write should succeed (DirectLogger doesn't check silenced? flag)
-      # That's intentional - DirectLogger is for parent app which explicitly wants to log
+      assert log_written, "Logger should accept the write call without error"
+      assert_equal 0, RawEntry.count, "Silenced logs should not be written to database"
     end
 
     test "closes cleanly and flushes remaining logs" do

@@ -40,6 +40,14 @@ module SolidLog
     # EXCEPT for error/fatal logs which flush immediately to prevent data loss on crash
     def write(message)
       return if @closed
+      return if SolidLog.silenced? # Skip if logging is silenced (anti-recursion)
+
+      # Skip SolidLog's own view rendering logs
+      if message.is_a?(String)
+        # Strip whitespace before checking pattern
+        trimmed = message.strip
+        return if trimmed.match?(/^Rendering (layout |partial )?.*solid_log/i)
+      end
 
       log_entry = parse_message(message)
       return unless log_entry # Skip if parsing failed
