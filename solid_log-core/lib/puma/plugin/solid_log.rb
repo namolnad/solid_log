@@ -8,10 +8,10 @@ require "puma/plugin"
 # raw log entries and processes them using BatchParsingService.
 #
 # Usage in config/puma.rb:
-#   plugin :solid_log if ENV["SOLIDLOG_PUMA_PLUGIN_ENABLED"]
+#   plugin :solid_log if ENV["SOLID_LOG_IN_PUMA"]
 #
 # Configuration:
-#   SOLIDLOG_PUMA_PLUGIN_ENABLED=true
+#   SOLID_LOG_IN_PUMA=true
 #   SOLIDLOG_INLINE_PARSING_ENABLED=true
 #   SOLIDLOG_PARSE_INTERVAL=10
 #   SOLIDLOG_PARSER_BATCH_SIZE=200
@@ -105,8 +105,8 @@ Puma::Plugin.create do
   # Check if plugin should be enabled
   def enabled?
     # Check ENV flag (explicit opt-in)
-    return false if ENV["SOLIDLOG_PUMA_PLUGIN_ENABLED"] == "false"
-    return false unless ENV["SOLIDLOG_PUMA_PLUGIN_ENABLED"]
+    return false if ENV["SOLID_LOG_IN_PUMA"] == "false"
+    return false unless ENV["SOLID_LOG_IN_PUMA"]
 
     # Check configuration flag
     return false unless config.inline_parsing_enabled

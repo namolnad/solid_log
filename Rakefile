@@ -8,8 +8,8 @@ task :test do
   puts "\n=== Running solid_log-service tests ==="
   system("cd solid_log-service && bundle exec rake test") || abort("Service tests failed")
 
-  puts "\n=== Running solid_log-ui tests ==="
-  system("cd solid_log-ui && bundle exec rake test") || abort("UI tests failed")
+  puts "\n=== Running solid_log tests ==="
+  system("cd solid_log && bundle exec rake test") || abort("UI tests failed")
 
   puts "\n=== All tests passed! ==="
 end
@@ -25,9 +25,9 @@ namespace :test do
     system("cd solid_log-service && bundle exec rake test") || abort("Service tests failed")
   end
 
-  desc "Run solid_log-ui tests"
+  desc "Run solid_log tests"
   task :ui do
-    system("cd solid_log-ui && bundle exec rake test") || abort("UI tests failed")
+    system("cd solid_log && bundle exec rake test") || abort("UI tests failed")
   end
 end
 
@@ -42,7 +42,7 @@ namespace :release do
     version_files = [
       "solid_log-core/lib/solid_log/core/version.rb",
       "solid_log-service/lib/solid_log/service/version.rb",
-      "solid_log-ui/lib/solid_log/ui/version.rb"
+      "solid_log/lib/solid_log/ui/version.rb"
     ]
 
     version_files.each do |file|
@@ -71,8 +71,8 @@ namespace :release do
     puts "\nBuilding solid_log-service..."
     system("cd solid_log-service && bundle exec gem build solid_log-service.gemspec") || abort("Failed to build solid_log-service")
 
-    puts "\nBuilding solid_log-ui..."
-    system("cd solid_log-ui && bundle exec gem build solid_log-ui.gemspec") || abort("Failed to build solid_log-ui")
+    puts "\nBuilding solid_log..."
+    system("cd solid_log && bundle exec gem build solid_log.gemspec") || abort("Failed to build solid_log")
 
     puts "\n=== All gems built successfully! ==="
   end
@@ -91,8 +91,8 @@ namespace :release do
     puts "\nPushing solid_log-service..."
     system("gem push solid_log-service/solid_log-service-#{version}.gem") || abort("Failed to push solid_log-service")
 
-    puts "\nPushing solid_log-ui..."
-    system("gem push solid_log-ui/solid_log-ui-#{version}.gem") || abort("Failed to push solid_log-ui")
+    puts "\nPushing solid_log..."
+    system("gem push solid_log/solid_log-#{version}.gem") || abort("Failed to push solid_log")
 
     puts "\n=== All gems pushed successfully! ==="
   end
@@ -124,7 +124,7 @@ namespace :release do
     puts "\n=== Cleaning up gem files ==="
     system("rm -f solid_log-core/*.gem")
     system("rm -f solid_log-service/*.gem")
-    system("rm -f solid_log-ui/*.gem")
+    system("rm -f solid_log/*.gem")
     puts "=== Gem files cleaned ==="
   end
 

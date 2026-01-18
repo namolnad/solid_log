@@ -26,8 +26,8 @@ This repository contains three gems that work together:
 ```
 solid_log/
 ├── solid_log-core/       # Database models, adapters, parser, services
-├── solid_log-service/    # Background jobs, ingestion API, workers
-├── solid_log-ui/         # Rails engine with web interface
+├── solid_log-service/    # Standalone service for high-volume ingestion
+├── solid_log/            # Main gem: core + Rails engine with web UI
 ├── demo/                 # Demo Rails app showing all 3 gems working together
 ├── docs/                 # Comprehensive documentation
 ├── Rakefile              # Run tests for all gems
@@ -70,10 +70,11 @@ solid_log/
 
 [See solid_log-service README](solid_log-service/README.md)
 
-#### 3. solid_log-ui
+#### 3. solid_log
 
-**Presentation layer** - Rails engine with web interface
+**All-in-one gem** - Includes core + Rails engine with web interface
 
+- All features from solid_log-core (models, adapters, services, jobs)
 - Mission Control-style dashboard
 - Log streams with filtering (level, app, env, time range, search)
 - Timeline views for request/job correlation
@@ -82,9 +83,9 @@ solid_log/
 - Live tail support
 - ActionCable integration for real-time updates
 
-**Use this gem when:** Mounting the log viewer in your Rails app
+**Use this gem when:** You want the complete SolidLog experience (recommended for most apps)
 
-[See solid_log-ui README](solid_log-ui/README.md)
+[See solid_log README](solid_log/README.md)
 
 ## Quick Start
 
@@ -115,7 +116,7 @@ Quick overview:
    ```ruby
    gem "solid_log-core", path: "vendor/gems/solid_log-core"
    gem "solid_log-service", path: "vendor/gems/solid_log-service"
-   gem "solid_log-ui", path: "vendor/gems/solid_log-ui"
+   gem "solid_log", path: "vendor/gems/solid_log"
    ```
 
 2. Configure multi-database in `config/database.yml`:
@@ -181,7 +182,7 @@ SolidLog uses a modular, three-gem architecture with a two-table storage pattern
 ┌─────────────────────────────────────────────────────────┐
 │                   Your Rails App                        │
 │  ┌──────────────────────────────────────────────────┐  │
-│  │  solid_log-ui (mounted at /admin/logs)           │  │
+│  │  solid_log (mounted at /admin/logs)           │  │
 │  │  - Dashboard, Streams, Timeline, Field Mgmt      │  │
 │  └────────────────────┬─────────────────────────────┘  │
 │                       │                                 │
@@ -254,7 +255,7 @@ Comprehensive guides are available in the repository:
 **Individual gem documentation:**
 - [solid_log-core/README.md](solid_log-core/README.md)
 - [solid_log-service/README.md](solid_log-service/README.md)
-- [solid_log-ui/README.md](solid_log-ui/README.md)
+- [solid_log/README.md](solid_log/README.md)
 
 ## Development
 
@@ -274,7 +275,7 @@ rake test:ui
 # Or run tests directly in each gem
 cd solid_log-core && bundle exec rake test
 cd solid_log-service && bundle exec rake test
-cd solid_log-ui && bundle exec rake test
+cd solid_log && bundle exec rake test
 ```
 
 ### Test Suite Quality
@@ -309,7 +310,7 @@ solid_log/
 │   ├── solid_log-service.gemspec
 │   └── README.md
 │
-├── solid_log-ui/
+├── solid_log/
 │   ├── app/
 │   │   ├── controllers/      # UI controllers
 │   │   ├── views/            # ERB templates
@@ -318,7 +319,7 @@ solid_log/
 │   │   └── channels/         # ActionCable channels
 │   ├── config/               # Routes, engine config
 │   ├── test/                 # Test suite (112 tests)
-│   ├── solid_log-ui.gemspec
+│   ├── solid_log.gemspec
 │   └── README.md
 │
 ├── demo/                     # Full Rails app demonstrating all 3 gems
@@ -363,7 +364,7 @@ SolidLog offers flexible integration options for different scales and architectu
 ### Option 1: Puma Plugin (Simplest - Recommended for Small Apps)
 
 Run everything in your Rails app with inline processing:
-- Add `solid_log-core` + `solid_log-ui` to your Gemfile
+- Add `solid_log-core` + `solid_log` to your Gemfile
 - Enable the Puma plugin for background parsing
 - No separate service or job queue needed
 - Background thread polls for unparsed logs every 10 seconds
@@ -386,7 +387,7 @@ end
 ### Option 2: Solid Queue Jobs (Scalable - Recommended for Most Apps)
 
 Use Rails background jobs for processing:
-- Add `solid_log-core` + `solid_log-ui` to your Gemfile
+- Add `solid_log-core` + `solid_log` to your Gemfile
 - Schedule jobs in `config/recurring.yml` (or use any ActiveJob backend)
 - Jobs scale with worker count
 - Works with Solid Queue, Sidekiq, Resque, etc.
@@ -416,7 +417,7 @@ production:
 
 Run a separate service process for high-volume ingestion:
 - Service app: `solid_log-core` + `solid_log-service` (ingestion + parsing)
-- Main app: `solid_log-core` + `solid_log-ui` (viewing only)
+- Main app: `solid_log-core` + `solid_log` (viewing only)
 - Service exposes HTTP API for ingestion
 - Built-in scheduler (no Rails or ActiveJob needed in service)
 - Both apps connect to the same log database

@@ -4,7 +4,7 @@ Core models, database adapters, parser, DirectLogger, and HTTP client for the So
 
 ## Overview
 
-`solid_log-core` provides the shared foundation for `solid_log-service` and `solid_log-ui` gems:
+`solid_log-core` provides the shared foundation for `solid_log-service` and `solid_log` gems:
 
 - **Models**: `RawEntry`, `Entry`, `Token`, `Field`, `FacetCache`
 - **Database Adapters**: SQLite, PostgreSQL, MySQL adapters with database-specific optimizations
@@ -38,7 +38,7 @@ gem 'mysql2', '>= 0.5'    # For MySQL
 
 This gem is typically used as a dependency for:
 - **solid_log-service**: Standalone log ingestion service
-- **solid_log-ui**: Web interface for viewing logs
+- **solid_log**: Main gem with core + web interface for viewing logs
 
 ### DirectLogger (Recommended for Parent App)
 

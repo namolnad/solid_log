@@ -29,7 +29,7 @@
 # Each gem's tmp directories (for benchmarks, etc)
 /solid_log-core/tmp/
 /solid_log-service/tmp/
-/solid_log-ui/tmp/
+/solid_log/tmp/
 
 # Each gem's test artifacts (internal test apps)
 /solid_log-core/test/internal/log/
@@ -40,9 +40,9 @@
 /solid_log-service/test/internal/tmp/
 /solid_log-service/test/internal/db/*.sqlite3
 
-/solid_log-ui/test/internal/log/
-/solid_log-ui/test/internal/tmp/
-/solid_log-ui/test/internal/db/*.sqlite3
+/solid_log/test/internal/log/
+/solid_log/test/internal/tmp/
+/solid_log/test/internal/db/*.sqlite3
 
 # Keep .keep files
 !/**/.keep

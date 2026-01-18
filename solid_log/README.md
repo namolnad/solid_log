@@ -1,11 +1,16 @@
-##SolidLog::UI
+# SolidLog
 
-Mission Control-style web interface for viewing SolidLog entries. Supports both direct database access and HTTP API mode.
+All-in-one log aggregation gem for Rails applications. Includes core models, database adapters, and Mission Control-style web interface.
 
 ## Overview
 
-`solid_log-ui` provides:
+`solid_log` is the main gem that provides everything you need:
 
+- **Core functionality** (from solid_log-core - auto-required):
+  - Database models and adapters (SQLite, PostgreSQL, MySQL)
+  - Parser for structured JSON logs
+  - Background jobs (ParseJob, RetentionJob, etc.)
+  - DirectLogger for high-performance logging
 - **Mission Control-style UI**: Browse, filter, and search logs
 - **Dual-mode support**:
   - **Direct DB**: Fast access when UI and service share database
@@ -18,7 +23,7 @@ Mission Control-style web interface for viewing SolidLog entries. Supports both 
 ## Installation
 
 ```ruby
-gem 'solid_log-ui'
+gem 'solid_log'
 
 # Also install database adapter if using direct_db mode
 gem 'sqlite3', '>= 2.1'   # or pg, or mysql2
@@ -286,7 +291,7 @@ Then import in your application.css:
 ## Development
 
 ```bash
-cd solid_log-ui
+cd solid_log
 bundle install
 ```
 

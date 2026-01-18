@@ -23,7 +23,7 @@ gem 'turbo-rails'
 # SolidLog gems - use local paths
 gem 'solid_log-core', path: '../solid_log-core'
 gem 'solid_log-service', path: '../solid_log-service'
-gem 'solid_log-ui', path: '../'
+gem 'solid_log', path: '../solid_log'
 
 # Lograge for structured logging
 gem 'lograge'

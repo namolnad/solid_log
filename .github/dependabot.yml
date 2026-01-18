@@ -11,7 +11,7 @@ updates:
     interval: daily
   open-pull-requests-limit: 10
 - package-ecosystem: bundler
-  directory: "/solid_log-ui"
+  directory: "/solid_log"
   schedule:
     interval: daily
   open-pull-requests-limit: 10

@@ -90,7 +90,7 @@ module SolidLog
         say "6. Create an API token:", :cyan
         say "   rails solid_log:create_token[\"Production API\"]"
         say ""
-        say "7. Mount the UI (if using solid_log-ui):", :cyan
+        say "7. Mount the UI (if using solid_log gem):", :cyan
         say "   Add to config/routes.rb:"
         say "   mount SolidLog::UI::Engine => '/admin/logs'"
         say ""

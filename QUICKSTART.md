@@ -10,23 +10,24 @@ This guide will help you integrate SolidLog into your Rails application in about
 
 ## Step 1: Install the Gems
 
-SolidLog consists of three gems. You can install all three for a complete setup, or just the ones you need.
+SolidLog provides flexible installation options depending on your needs.
 
-### Option A: Install All Gems (Recommended)
+### Option A: Main Gem (Recommended for Most Apps)
 
-Add to your `Gemfile`:
+For most Rails apps, just install the `solid_log` gem which includes everything:
 
 ```ruby
-# If you've vendored the gems locally
-gem "solid_log-core", path: "vendor/gems/solid_log-core"
-gem "solid_log-service", path: "vendor/gems/solid_log-service"
-gem "solid_log-ui", path: "vendor/gems/solid_log-ui"
+# If you've vendored the gem locally
+gem "solid_log", path: "vendor/gems/solid_log"
 
 # Or if published to RubyGems (future)
-# gem "solid_log-core"
-# gem "solid_log-service"
-# gem "solid_log-ui"
+# gem "solid_log"
 ```
+
+This includes:
+- ✅ Core (models, adapters, services, jobs) - auto-required
+- ✅ UI (Mission Control-style dashboard)
+- ✅ Everything you need for log aggregation
 
 Then run:
 
@@ -43,17 +44,15 @@ Install only what you need:
   gem "solid_log-core"
   ```
 
-- **Core + UI** (Recommended): For most Rails apps with inline processing or Solid Queue
+- **Main gem + Service**: For high-volume apps with dedicated ingestion service
   ```ruby
-  gem "solid_log-core"
-  gem "solid_log-ui"
+  gem "solid_log"              # Includes core + UI
+  gem "solid_log-service"      # Standalone service for ingestion
   ```
 
-- **Core + Service + UI**: For high-volume apps with dedicated ingestion service
+- **Service only**: For a dedicated log ingestion service (no UI)
   ```ruby
-  gem "solid_log-core"
-  gem "solid_log-service"
-  gem "solid_log-ui"
+  gem "solid_log-service"      # Includes core - auto-required
   ```
 
 ## Step 2: Configure Database
@@ -243,7 +242,7 @@ SolidLog.configure do |config|
   # Performance
   config.facet_cache_ttl = 5.minutes      # Cache filter options for 5 min
 
-  # UI & Auth (if using solid_log-ui)
+  # UI & Auth (if using solid_log)
   config.ui_enabled = true
   config.authentication_method = :basic   # :basic, :session, or :custom
 
@@ -266,7 +265,7 @@ end
 - Safer for production (write-ahead logging)
 - Skip this if using PostgreSQL or MySQL (they have their own WAL)
 
-## Step 6: Mount the UI (If Using solid_log-ui)
+## Step 6: Mount the UI (If Using solid_log)
 
 Add to `config/routes.rb`:
 

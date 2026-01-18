@@ -2,13 +2,13 @@ require_relative "lib/solid_log/ui/version"
 require_relative "../solid_log-core/lib/solid_log/core/version"
 
 Gem::Specification.new do |spec|
-  spec.name        = "solid_log-ui"
+  spec.name        = "solid_log"
   spec.version     = SolidLog::UI::VERSION
   spec.authors     = ["Dan Loman"]
   spec.email       = ["daniel.h.loman@gmail.com"]
   spec.homepage    = "https://github.com/namolnad/solid_log"
-  spec.summary     = "Web UI for viewing SolidLog entries"
-  spec.description = "Mission Control-style web interface for SolidLog. Supports direct database access or HTTP API mode. Mount in your Rails app for log viewing."
+  spec.summary     = "All-in-one log aggregation for Rails apps"
+  spec.description = "Complete log aggregation solution with database storage and Mission Control-style web UI. Includes models, database adapters, and UI. For high-performance needs, use solid_log-service instead."
   spec.license     = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage
